@@ -5,6 +5,14 @@
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NormVg/web-have-sound.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NormVg/web-have-sound/issues"
+  },
+  "homepage": "https://github.com/NormVg/web-have-sound#readme",
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
