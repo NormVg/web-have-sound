@@ -1,0 +1,26 @@
+{
+  "name": "web-have-sounds",
+  "version": "1.0.0",
+  "description": "Procedurally generated, zero-dependency UI sounds using the native Web Audio API.",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "audio",
+    "ui",
+    "sounds",
+    "synthesis",
+    "web-audio-api"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3"
+  }
+}
