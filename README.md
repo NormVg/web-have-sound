@@ -1,8 +1,8 @@
-# web-have-sounds
+# @thenormvg/web-have-sounds
 
 A professional, zero-dependency JavaScript/TypeScript library for generating UI sound effects entirely through mathematics via the native Web Audio API.
 
-[![npm version](https://img.shields.io/npm/v/web-have-sounds.svg)](https://npmjs.com/package/web-have-sounds)
+[![npm version](https://img.shields.io/npm/v/@thenormvg/web-have-sounds.svg)](https://npmjs.com/package/@thenormvg/web-have-sounds)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 No `.wav`, `.mp3`, or `.ogg` files to load. No network requests. Perfect for adding high-quality, interactive sonic feedback to your web apps, dashboards, and games without bloating your bundle size.
@@ -21,11 +21,11 @@ No `.wav`, `.mp3`, or `.ogg` files to load. No network requests. Perfect for add
 Install via your preferred package manager:
 
 ```bash
-npm install web-have-sounds
+npm install @thenormvg/web-have-sounds
 # or
-yarn add web-have-sounds
+yarn add @thenormvg/web-have-sounds
 # or
-pnpm add web-have-sounds
+pnpm add @thenormvg/web-have-sounds
 ```
 
 ---
@@ -35,7 +35,7 @@ pnpm add web-have-sounds
 Import `playUISound` and trigger it inside any user interaction (click, keyboard press, etc.).
 
 ```javascript
-import { playUISound } from 'web-have-sounds';
+import { playUISound } from '@thenormvg/web-have-sounds';
 
 // Attach to a button click
 document.querySelector('#submit-btn').addEventListener('click', () => {
@@ -68,10 +68,10 @@ Choose from 9 distinct UI sound categories depending on the context of the user 
 You can alter the global character of your sounds by passing a "Feel" as the second argument. A Feel acts as a preset for oscillators, EQ filters, timing multipliers, and pitches.
 
 ```javascript
-import { playUISound } from 'web-have-sounds';
+import { playUISound } from '@thenormvg/web-have-sounds';
 
 playUISound('success', 'arcade'); // 8-bit, retro console style
-playUISound('success', 'soft');   // Gentle, sine-wave dominant 
+playUISound('success', 'soft');   // Gentle, sine-wave dominant
 playUISound('success', 'glass');  // High-frequency, resonant
 ```
 
@@ -84,9 +84,9 @@ Available Feels:
 If you want granular control, you can bypass the preset Feels and pass your own `FeelParams` object.
 
 ```javascript
-import { playUISound } from 'web-have-sounds';
+import { playUISound } from '@thenormvg/web-have-sounds';
 
-playUISound('toggle', { 
+playUISound('toggle', {
     filterFreq: 4000,     // Lowpass/Bandpass cutoff frequency in Hz
     q: 5,                 // Filter resonance
     oscType: "square",    // "sine", "square", "sawtooth", "triangle"
