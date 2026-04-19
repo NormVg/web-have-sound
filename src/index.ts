@@ -47,10 +47,10 @@ export function playUISound(
 ) {
     if (!ctx) ctx = getAudioContext();
     const t = ctx.currentTime;
-    
+
     // Resolve preset string if necessary
-    const params = typeof feelOrParams === "string" 
-        ? FEEL_PRESETS[feelOrParams] 
+    const params = typeof feelOrParams === "string"
+        ? FEEL_PRESETS[feelOrParams]
         : feelOrParams;
 
     switch (type) {
