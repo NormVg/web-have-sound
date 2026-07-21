@@ -214,44 +214,60 @@
       </section>
 
       <div class="mono-split">
-        <section class="mono-panel" aria-label="Live pads">
+        <section class="mono-panel mono-panel-fill" aria-label="Live pads">
           <div class="mono-panel-head">
-            <h2 class="mono-panel-title">Pads</h2>
+            <div>
+              <h2 class="mono-panel-title">Pads</h2>
+              <p class="mono-panel-meta">Tap to preview each layer</p>
+            </div>
           </div>
-          <div class="mono-pads">
+          <div
+            class="mono-pads"
+            :style="{ gridTemplateColumns: `repeat(${padCols}, minmax(0, 1fr))` }"
+          >
             <button
               v-for="track in daw.tracks.value"
               :key="`pad-${track.id}`"
               type="button"
               class="mono-pad"
-              :class="{ 'is-hit': hitId === track.id }"
+              :class="{ 'is-hit': hitId === track.id, 'is-muted': track.muted }"
               @pointerdown.prevent="onPad(track.id)"
             >
+              <span class="mono-pad-index" aria-hidden="true" />
               <span class="mono-pad-name">{{ track.name }}</span>
               <span class="mono-pad-meta">
-                {{ track.sound }} · {{ track.useCustom ? 'custom' : track.feel }}
+                {{ track.sound }}
+                <span class="mono-pad-dot">·</span>
+                {{ track.useCustom ? 'custom' : track.feel }}
               </span>
             </button>
           </div>
         </section>
 
-        <section class="mono-panel" aria-label="Ambient beds">
+        <section class="mono-panel mono-panel-fill" aria-label="Ambient beds">
           <div class="mono-panel-head">
-            <h2 class="mono-panel-title">Ambient</h2>
+            <div>
+              <h2 class="mono-panel-title">Ambient</h2>
+              <p class="mono-panel-meta">Loop beds under the pattern</p>
+            </div>
+            <button type="button" class="mono-btn is-ghost mono-btn-sm" @click="stopBeds">
+              <Square :size="12" :stroke-width="2" aria-hidden="true" />
+              Stop all
+            </button>
           </div>
-          <div class="mono-chips">
+          <div class="mono-ambient-grid">
             <button
               v-for="bed in beds"
               :key="bed"
               type="button"
-              class="mono-chip"
+              class="mono-ambient"
               :class="{ 'is-on': ambientOn[bed] }"
+              :aria-pressed="ambientOn[bed]"
               @click="toggleBed(bed)"
             >
-              {{ bed }}
-            </button>
-            <button type="button" class="mono-chip" @click="stopBeds">
-              stop
+              <span class="mono-ambient-dot" aria-hidden="true" />
+              <span class="mono-ambient-name">{{ bed }}</span>
+              <span class="mono-ambient-state">{{ ambientOn[bed] ? 'on' : 'off' }}</span>
             </button>
           </div>
         </section>
@@ -351,6 +367,16 @@ const gridStyle = computed(() => ({
   gridTemplateColumns: `minmax(200px, 220px) repeat(${daw.stepCount.value}, minmax(26px, 1fr))`,
   width: '100%',
 }))
+
+/** Pad columns fill the panel evenly (1–4 per row) */
+const padCols = computed(() => {
+  const n = daw.tracks.value.length
+  if (n <= 1) return 1
+  if (n === 2) return 2
+  if (n === 3) return 3
+  if (n === 4) return 4
+  return Math.min(4, Math.ceil(n / 2))
+})
 
 function unlock() {
   warmUp()
