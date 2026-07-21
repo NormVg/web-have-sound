@@ -1,7 +1,7 @@
 <template>
-  <div class="desk-knob">
+  <div class="mono-knob">
     <div
-      class="desk-knob-dial"
+      class="mono-knob-dial"
       role="slider"
       tabindex="0"
       :aria-label="label"
@@ -12,8 +12,8 @@
       @pointerdown="onDown"
       @keydown="onKey"
     />
-    <span class="desk-knob-name">{{ label }}</span>
-    <span class="desk-knob-val">{{ display }}</span>
+    <span class="mono-knob-name">{{ label }}</span>
+    <span class="mono-knob-val">{{ display }}</span>
   </div>
 </template>
 
@@ -25,38 +25,22 @@ const props = withDefaults(
     min?: number
     max?: number
     step?: number
-    /** Format shown under knob */
     format?: (v: number) => string
   }>(),
-  {
-    min: 0,
-    max: 1,
-    step: 0.01,
-  },
+  { min: 0, max: 1, step: 0.01 },
 )
 
-const emit = defineEmits<{
-  'update:modelValue': [number]
-}>()
+const emit = defineEmits<{ 'update:modelValue': [number] }>()
 
-const rounded = computed(() => {
-  const s = props.step
-  return Math.round(props.modelValue / s) * s
-})
-
+const rounded = computed(() => Math.round(props.modelValue / props.step) * props.step)
 const display = computed(() =>
   props.format ? props.format(rounded.value) : String(Number(rounded.value.toFixed(2))),
 )
-
-/** Map value to dial rotation -120deg … 120deg */
 const dialStyle = computed(() => {
-  const t = (props.modelValue - props.min) / (props.max - props.min || 1)
-  const clamped = Math.min(1, Math.max(0, t))
-  const rot = -120 + clamped * 240
-  const angle = clamped * 240
+  const t = Math.min(1, Math.max(0, (props.modelValue - props.min) / (props.max - props.min || 1)))
   return {
-    '--knob-rot': `${rot}deg`,
-    '--knob-angle': `${angle}deg`,
+    '--knob-rot': `${-120 + t * 240}deg`,
+    '--knob-angle': `${t * 240}deg`,
   }
 })
 
@@ -64,8 +48,7 @@ let startY = 0
 let startVal = 0
 
 function clamp(v: number) {
-  const stepped = Math.round(v / props.step) * props.step
-  return Math.min(props.max, Math.max(props.min, stepped))
+  return Math.min(props.max, Math.max(props.min, Math.round(v / props.step) * props.step))
 }
 
 function onDown(e: PointerEvent) {
@@ -73,12 +56,9 @@ function onDown(e: PointerEvent) {
   el.setPointerCapture(e.pointerId)
   startY = e.clientY
   startVal = props.modelValue
-
   const onMove = (ev: PointerEvent) => {
-    const dy = startY - ev.clientY
     const range = props.max - props.min
-    const next = clamp(startVal + (dy / 100) * range)
-    emit('update:modelValue', next)
+    emit('update:modelValue', clamp(startVal + ((startY - ev.clientY) / 100) * range))
   }
   const onUp = (ev: PointerEvent) => {
     el.releasePointerCapture(ev.pointerId)

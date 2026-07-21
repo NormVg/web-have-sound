@@ -1,47 +1,38 @@
 <template>
   <div
     v-if="track"
-    class="desk-modal-root"
+    class="mono-drawer-root"
     role="dialog"
     aria-modal="true"
     :aria-labelledby="titleId"
     @click.self="emit('close')"
   >
-    <div class="desk-window desk-modal">
-      <div class="desk-titlebar">
-        <div class="desk-titlebar-left">
-          <SlidersHorizontal :size="14" :stroke-width="2" aria-hidden="true" />
-          <span :id="titleId">Edit · {{ track.name }}</span>
-        </div>
-        <div class="desk-titlebar-actions">
-          <button type="button" class="desk-title-btn" aria-label="Close" @click="emit('close')">
-            <X :size="14" :stroke-width="2.5" />
-          </button>
-        </div>
+    <div class="mono-drawer">
+      <div class="mono-drawer-head">
+        <h2 :id="titleId">{{ track.name }}</h2>
+        <button type="button" class="mono-icon-btn" aria-label="Close" @click="emit('close')">
+          <X :size="18" :stroke-width="2" />
+        </button>
       </div>
 
-      <div class="desk-window-body">
-        <div class="desk-field">
-          <span class="desk-label">Base sound</span>
-          <select
-            class="desk-select"
-            :value="track.sound"
-            @change="onSound"
-          >
+      <div class="mono-drawer-body">
+        <div class="mono-field">
+          <span class="mono-label">Sound</span>
+          <select class="mono-select" :value="track.sound" @change="onSound">
             <option v-for="s in sounds" :key="s" :value="s">{{ s }}</option>
           </select>
         </div>
 
-        <div class="desk-field">
-          <span class="desk-label">Feel seed</span>
-          <select class="desk-select" :value="track.feel" @change="onFeelSeed">
+        <div class="mono-field">
+          <span class="mono-label">Feel seed</span>
+          <select class="mono-select" :value="track.feel" @change="onFeelSeed">
             <option v-for="f in feels" :key="f" :value="f">{{ f }}</option>
           </select>
         </div>
 
-        <div class="desk-field">
-          <span class="desk-label">Wave</span>
-          <select class="desk-select" :value="track.customParams.oscType" @change="onOsc">
+        <div class="mono-field">
+          <span class="mono-label">Wave</span>
+          <select class="mono-select" :value="track.customParams.oscType" @change="onOsc">
             <option value="sine">sine</option>
             <option value="triangle">triangle</option>
             <option value="square">square</option>
@@ -49,7 +40,7 @@
           </select>
         </div>
 
-        <div class="desk-knob-grid">
+        <div class="mono-knob-grid">
           <DeskKnob
             label="Pitch"
             :model-value="track.customParams.pitchMult"
@@ -133,28 +124,27 @@
           />
         </div>
 
-        <div class="desk-modal-actions">
-          <button type="button" class="desk-btn is-primary" @click="emit('preview')">
-            <Play :size="14" :stroke-width="2.2" aria-hidden="true" />
+        <div class="mono-actions">
+          <button type="button" class="mono-btn is-primary" @click="emit('preview')">
+            <Play :size="14" :stroke-width="2" aria-hidden="true" />
             Preview
           </button>
-          <button type="button" class="desk-btn" @click="onSave">
-            <Save :size="14" :stroke-width="2.2" aria-hidden="true" />
+          <button type="button" class="mono-btn" @click="onSave">
+            <Save :size="14" :stroke-width="2" aria-hidden="true" />
             Save preset
           </button>
         </div>
 
-        <div v-if="presets.length" class="desk-field">
-          <span class="desk-label">Your presets</span>
-          <div class="desk-chips">
+        <div v-if="presets.length" class="mono-field">
+          <span class="mono-label">Presets</span>
+          <div class="mono-chips">
             <button
               v-for="p in presets"
               :key="p.id"
               type="button"
-              class="desk-chip"
+              class="mono-chip"
               @click="emit('apply-preset', p.id)"
             >
-              <Bookmark :size="12" :stroke-width="2" aria-hidden="true" />
               {{ p.name }}
             </button>
           </div>
@@ -165,13 +155,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  Bookmark,
-  Play,
-  Save,
-  SlidersHorizontal,
-  X,
-} from '@lucide/vue'
+import { Play, Save, X } from '@lucide/vue'
 import type { FeelType, FeelParams, SoundType } from '@thenormvg/web-have-sounds'
 import type { CustomPreset, DawTrack } from '~/composables/useDaw'
 import { DAW_FEELS, DAW_SOUNDS } from '~/composables/useDaw'

@@ -4,36 +4,35 @@
     <p>
       Guides for
       <code>@thenormvg/web-have-sounds</code>
-      - procedural UI sounds, Feels, loops, and a custom catalog.
+      - sounds, Feels, loops, and custom catalogs.
     </p>
     <p>
-      Prefer hands-on?
-      <NuxtLink to="/">Open the desk</NuxtLink>
-      on the home page.
+      Prefer the tool?
+      <NuxtLink to="/">Open the desk</NuxtLink>.
     </p>
 
-    <div class="docs-cards">
-      <NuxtLink class="docs-card" to="/docs/getting-started">
+    <div class="docs-mono-cards">
+      <NuxtLink class="docs-mono-card" to="/docs/getting-started">
         <h3>Getting started</h3>
         <p>Install, configure, first sound.</p>
       </NuxtLink>
-      <NuxtLink class="docs-card" to="/docs/sounds">
+      <NuxtLink class="docs-mono-card" to="/docs/sounds">
         <h3>Sounds</h3>
         <p>One-shot catalog.</p>
       </NuxtLink>
-      <NuxtLink class="docs-card" to="/docs/feels">
+      <NuxtLink class="docs-mono-card" to="/docs/feels">
         <h3>Feels</h3>
         <p>Sonic palettes.</p>
       </NuxtLink>
-      <NuxtLink class="docs-card" to="/docs/loops">
+      <NuxtLink class="docs-mono-card" to="/docs/loops">
         <h3>Loops</h3>
         <p>Long-running beds.</p>
       </NuxtLink>
-      <NuxtLink class="docs-card" to="/docs/custom">
+      <NuxtLink class="docs-mono-card" to="/docs/custom">
         <h3>Custom</h3>
         <p>registerFeel / registerSound.</p>
       </NuxtLink>
-      <NuxtLink class="docs-card" to="/docs/api">
+      <NuxtLink class="docs-mono-card" to="/docs/api">
         <h3>API</h3>
         <p>Reference surface.</p>
       </NuxtLink>

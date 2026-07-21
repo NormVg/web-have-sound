@@ -1,11 +1,11 @@
 <template>
-  <div class="docs-os">
-    <header class="desk-menubar">
-      <NuxtLink to="/" class="desk-menubar-brand">
-        <AudioLines :size="16" :stroke-width="2.2" aria-hidden="true" />
+  <div class="docs-mono">
+    <header class="mono-nav">
+      <NuxtLink to="/" class="mono-brand">
+        <AudioLines :size="16" :stroke-width="2" aria-hidden="true" />
         web-have-sounds
       </NuxtLink>
-      <nav class="desk-menubar-nav" aria-label="Primary">
+      <nav class="mono-nav-links" aria-label="Primary">
         <NuxtLink to="/">
           <LayoutGrid :size="14" :stroke-width="2" aria-hidden="true" />
           Desk
@@ -14,20 +14,16 @@
           <BookOpen :size="14" :stroke-width="2" aria-hidden="true" />
           Docs
         </NuxtLink>
-        <a
-          href="https://github.com/NormVg/web-have-sound"
-          target="_blank"
-          rel="noreferrer"
-        >
+        <a href="https://github.com/NormVg/web-have-sound" target="_blank" rel="noreferrer">
           <FolderGit2 :size="14" :stroke-width="2" aria-hidden="true" />
           GitHub
         </a>
       </nav>
     </header>
 
-    <div class="docs-shell">
-      <div class="docs-layout">
-        <aside class="docs-side" aria-label="Docs">
+    <div class="docs-mono-shell">
+      <div class="docs-mono-layout">
+        <aside class="docs-mono-side" aria-label="Docs">
           <span class="group">Start</span>
           <NuxtLink to="/docs">Overview</NuxtLink>
           <NuxtLink to="/docs/getting-started">Getting started</NuxtLink>
@@ -40,7 +36,7 @@
           <span class="group">Reference</span>
           <NuxtLink to="/docs/api">API</NuxtLink>
         </aside>
-        <article class="docs-main">
+        <article class="docs-mono-main">
           <slot />
         </article>
       </div>
@@ -57,10 +53,10 @@ useHead({
     { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
     {
       rel: 'stylesheet',
-      href: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap',
+      href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap',
     },
   ],
 })
 </script>
 
-<style src="~/assets/css/desk-os.css"></style>
+<style src="~/assets/css/mono.css"></style>
