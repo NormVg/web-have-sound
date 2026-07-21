@@ -1,3 +1,9 @@
 node_modules
 dist
 .DS_Store
+.nuxt
+.output
+docs/.nuxt
+docs/.output
+docs/node_modules
+docs/dist

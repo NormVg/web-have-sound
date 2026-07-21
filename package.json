@@ -17,6 +17,9 @@
     "build": "tsup src/index.ts --format cjs,esm --dts",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
     "test": "npm run build && node --test test/*.test.mjs",
+    "docs:dev": "npm run build && npm run dev --prefix docs",
+    "docs:build": "npm run build && npm run build --prefix docs",
+    "docs:generate": "npm run build && npm run generate --prefix docs",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
