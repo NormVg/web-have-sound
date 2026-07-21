@@ -1,13 +1,13 @@
 import type { Catalog } from "../catalog";
-import type { SoundSynthContext } from "../types";
+import type { SynthContext } from "../types";
 import { chord, envelope, noiseBurst, safeOscType, tone } from "./primitives";
 
-/** Register all built-in one-shot + ambient sounds into the catalog. */
+/** Register all built-in one-shot sounds into the catalog. */
 export function registerBuiltins(catalog: Catalog): void {
     const r = (
         name: string,
-        synth: (s: SoundSynthContext) => void,
-        opts?: { throttleMs?: number; defaultEvent?: string; ambient?: boolean }
+        synth: (s: SynthContext) => void,
+        opts?: { throttleMs?: number; defaultEvent?: string }
     ) => catalog.registerSound(name, synth, opts, true);
 
     r("click", (s) => {
@@ -212,7 +212,7 @@ export function registerBuiltins(catalog: Catalog): void {
         });
     });
 
-    const removeSynth = (s: SoundSynthContext) => {
+    const removeSynth = (s: SynthContext) => {
         noiseBurst(s, {
             duration: 0.08,
             expDiv: 120,

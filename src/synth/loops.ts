@@ -1,5 +1,5 @@
 import type { Catalog } from "../catalog";
-import type { LoopControl, LoopSynthContext } from "../types";
+import type { LoopControl, SynthContext } from "../types";
 
 /**
  * Built-in long-running beds.
@@ -8,7 +8,7 @@ import type { LoopControl, LoopSynthContext } from "../types";
 export function registerBuiltinLoops(catalog: Catalog): void {
     const r = (
         name: string,
-        synth: (s: LoopSynthContext) => LoopControl | void,
+        synth: (s: SynthContext) => LoopControl | void,
         opts?: { fadeIn?: number; fadeOut?: number }
     ) => catalog.registerLoop(name, synth, opts, true);
 

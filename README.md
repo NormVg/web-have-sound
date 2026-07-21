@@ -74,16 +74,21 @@ const result = playUISound('click');
 ## Architecture (how to think about it)
 
 ```
-configure / registerFeel / registerSound
-              ↓
-        Catalog (names → feels & synths)
-              ↓
-  play() → gates → resolve feel → synth → engine
-              ↑
-     bindUISounds / ambient (thin adapters)
+configure / registerFeel / registerSound / registerLoop
+                    ↓
+              Catalog (names)
+         ┌──────────┴──────────┐
+     play()                 LoopRuntime
+   (one-shots)            (long-running)
+         └──────────┬──────────┘
+                    ↓
+            AudioEngine
+   synth → [pan] → [loop bus] → master → out
 ```
 
-Built-in sounds are **pre-registered** the same way as custom ones — one code path.
+**Gain model:** synth peaks use feel `gainMult` only; loop bus holds per-loop volume + fade; engine **master bus** applies live `setMasterVolume` to everything.
+
+Built-ins are pre-registered the same way as custom entries — one code path.
 
 ---
 
@@ -195,8 +200,7 @@ startLoop('upload');
 stopLoop('upload');
 ```
 
-`LoopSynthContext` mirrors one-shots: `ctx`, `time`, `params`, `volume`, `connect`.  
-Return `{ sources, dispose? }` so teardown is clean.
+Same `SynthContext` as one-shots. Return `{ sources, dispose? }` so teardown is clean.
 
 > **Aliases:** `startAmbient` / `stopAmbient` / `isAmbientPlaying` still work and map to the loop API.
 
@@ -262,7 +266,7 @@ registerSound(
 playUISound('whoosh', 'brand');
 ```
 
-`SoundSynthContext`: `ctx`, `time`, `params`, `volume`, `connect(node)`.
+`SynthContext` (one-shots & loops): `ctx`, `time`, `params`, `volume` (feel `gainMult` only), `connect(node)`.
 
 `synthHelpers`: `tone`, `noiseBurst`, `chord`, `envelope`, `clamp`, `safeOscType`.
 

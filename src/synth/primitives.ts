@@ -1,4 +1,4 @@
-import type { ResolvedFeelParams, SoundSynthContext } from "../types";
+import type { ResolvedFeelParams, SynthContext } from "../types";
 import { clamp } from "../utils";
 
 export function safeOscType(
@@ -44,7 +44,7 @@ export interface NoiseBurstOptions {
 }
 
 /** Filtered noise burst (click/tick/hover body). */
-export function noiseBurst(s: SoundSynthContext, opts: NoiseBurstOptions): void {
+export function noiseBurst(s: SynthContext, opts: NoiseBurstOptions): void {
     const { ctx, time, params, connect } = s;
     const duration = Math.max(opts.duration * params.decayMult, 0.001);
     const frames = Math.max(1, Math.floor(ctx.sampleRate * duration));
@@ -92,7 +92,7 @@ export interface ToneOptions {
 }
 
 /** Single oscillator tone with optional pitch ramp + envelope. */
-export function tone(s: SoundSynthContext, opts: ToneOptions): number {
+export function tone(s: SynthContext, opts: ToneOptions): number {
     const { ctx, time, params, connect } = s;
     const start = time + (opts.startOffset ?? 0);
     const osc = ctx.createOscillator();
@@ -146,7 +146,7 @@ export interface ChordNoteOptions {
 }
 
 /** Staggered chord / arpeggio of pure tones. */
-export function chord(s: SoundSynthContext, opts: ChordNoteOptions): void {
+export function chord(s: SynthContext, opts: ChordNoteOptions): void {
     const { ctx, time, params, connect } = s;
     const oscType =
         opts.oscType ??

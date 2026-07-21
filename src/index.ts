@@ -21,6 +21,7 @@ export type {
     FeelId,
     FeelParams,
     ResolvedFeelParams,
+    SynthContext,
     SoundSynthContext,
     SoundSynthFn,
     LoopSynthContext,
