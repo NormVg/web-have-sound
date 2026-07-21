@@ -2,6 +2,9 @@ import type {
     FeelId,
     FeelParams,
     FeelType,
+    LoopEntry,
+    LoopSynthFn,
+    RegisterLoopOptions,
     RegisterSoundOptions,
     ResolvedFeelParams,
     SoundEntry,
@@ -56,6 +59,7 @@ const DEFAULT_THROTTLE: Record<string, number> = {
 export class Catalog {
     private feels = new Map<string, FeelParams>();
     private sounds = new Map<string, SoundEntry>();
+    private loops = new Map<string, LoopEntry>();
     private throttleOverrides = new Map<string, number>();
     private debug = false;
 
@@ -163,6 +167,13 @@ export class Catalog {
             );
         }
 
+        if (this.loops.has(key)) {
+            logWarn(
+                this.debug,
+                `registerSound("${key}"): a loop with this name exists — use a different id or unregisterLoop first`
+            );
+        }
+
         const prev = this.sounds.get(key);
         this.sounds.set(key, {
             synth,
@@ -172,7 +183,6 @@ export class Catalog {
                 DEFAULT_THROTTLE[key] ??
                 0,
             defaultEvent: options.defaultEvent ?? prev?.defaultEvent ?? "click",
-            ambient: options.ambient ?? prev?.ambient ?? false,
             builtin: builtin || prev?.builtin === true,
         });
     }
@@ -205,6 +215,74 @@ export class Catalog {
 
     listSoundNames(): string[] {
         return Array.from(this.sounds.keys());
+    }
+
+    // ----- Loops (long-running) -----
+
+    registerLoop(
+        name: string,
+        synth: LoopSynthFn,
+        options: RegisterLoopOptions = {},
+        builtin = false
+    ): void {
+        const key = name.trim();
+        if (!key) {
+            logWarn(this.debug, "registerLoop: name must be a non-empty string");
+            return;
+        }
+        if (typeof synth !== "function") {
+            logWarn(this.debug, `registerLoop("${key}"): synth must be a function`);
+            return;
+        }
+        if (this.sounds.has(key)) {
+            logWarn(
+                this.debug,
+                `registerLoop("${key}"): a one-shot sound with this name exists — pick a unique id`
+            );
+        }
+        if (!builtin && this.loops.get(key)?.builtin) {
+            logWarn(
+                this.debug,
+                `registerLoop("${key}"): overwriting built-in loop — this affects the whole app`
+            );
+        }
+
+        const prev = this.loops.get(key);
+        this.loops.set(key, {
+            synth,
+            fadeIn: options.fadeIn ?? prev?.fadeIn ?? 0.08,
+            fadeOut: options.fadeOut ?? prev?.fadeOut ?? 0.12,
+            builtin: builtin || prev?.builtin === true,
+        });
+    }
+
+    unregisterLoop(name: string): void {
+        const key = name.trim();
+        const entry = this.loops.get(key);
+        if (!entry) return;
+        if (entry.builtin) {
+            logWarn(this.debug, `unregisterLoop("${key}"): cannot remove a built-in loop`);
+            return;
+        }
+        this.loops.delete(key);
+    }
+
+    hasLoop(name: string): boolean {
+        return this.loops.has(name);
+    }
+
+    getLoop(name: string): LoopEntry | undefined {
+        return this.loops.get(name);
+    }
+
+    listCustomLoops(): string[] {
+        return Array.from(this.loops.entries())
+            .filter(([, e]) => !e.builtin)
+            .map(([k]) => k);
+    }
+
+    listLoopNames(): string[] {
+        return Array.from(this.loops.keys());
     }
 
     // ----- Throttle -----

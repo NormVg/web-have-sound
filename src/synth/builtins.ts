@@ -286,13 +286,4 @@ export function registerBuiltins(catalog: Catalog): void {
             oscType: "triangle",
         });
     });
-
-    // Ambient loading bed — started via startAmbient, not playUISound
-    r(
-        "loading",
-        () => {
-            /* ambient handled in engine instance */
-        },
-        { ambient: true }
-    );
 }

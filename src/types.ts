@@ -27,7 +27,17 @@ export type SoundType =
 /** Built-in sound name, or any string registered via `registerSound`. */
 export type SoundId = SoundType | (string & {});
 
-export type AmbientType = "loading";
+/**
+ * Built-in long-running / looped beds.
+ * Custom loops: any string via `registerLoop`.
+ */
+export type BuiltInLoopType = "loading" | "processing" | "pulse" | "hum";
+
+/** @deprecated Use BuiltInLoopType | LoopId */
+export type AmbientType = BuiltInLoopType;
+
+/** Built-in or registered loop id. */
+export type LoopId = BuiltInLoopType | (string & {});
 
 export type FeelType =
     | "soft"
@@ -94,6 +104,37 @@ export interface SoundSynthContext {
 
 export type SoundSynthFn = (synth: SoundSynthContext) => void;
 
+/**
+ * Context for long-running / looped synths.
+ * Same routing rules as one-shots: always `connect()` your graph.
+ * Oscillators you start should run until the system calls `stop` on returned sources.
+ */
+export interface LoopSynthContext {
+    ctx: AudioContext;
+    time: number;
+    params: ResolvedFeelParams;
+    /**
+     * Absolute gain scale: `gainMult * masterVolume * loopVolume`.
+     * Scale your bed levels with this.
+     */
+    volume: number;
+    /** Connect into this loop's master gain (fade handled by the engine). */
+    connect: (node: AudioNode) => void;
+}
+
+/**
+ * What a loop synth returns so the engine can tear it down cleanly.
+ */
+export interface LoopControl {
+    /** Nodes with `.stop()` (OscillatorNode, AudioBufferSourceNode, …). */
+    sources?: Array<{ stop: (when?: number) => void }>;
+    /** Extra cleanup after fade-out (timers, intervals, custom nodes). */
+    dispose?: () => void;
+}
+
+/** Builds a looping bed. Return sources so `stopLoop` can end them. */
+export type LoopSynthFn = (synth: LoopSynthContext) => LoopControl | void;
+
 export interface RegisterSoundOptions {
     /** Min ms between plays. Default 0. */
     throttleMs?: number;
@@ -102,8 +143,28 @@ export interface RegisterSoundOptions {
      * Default: `"click"`.
      */
     defaultEvent?: string;
-    /** If true, usable with startAmbient (looping bed). */
-    ambient?: boolean;
+}
+
+export interface RegisterLoopOptions {
+    /** Default fade-in seconds when started. Default 0.08. */
+    fadeIn?: number;
+    /** Default fade-out seconds when stopped. Default 0.12. */
+    fadeOut?: number;
+}
+
+export interface StartLoopOptions {
+    feel?: FeelId | FeelParams;
+    pan?: number;
+    /** Per-loop volume 0–1 (on top of master). Default 1. */
+    volume?: number;
+    /** Override fade-in seconds. */
+    fadeIn?: number;
+    ctx?: AudioContext;
+}
+
+export interface StopLoopOptions {
+    /** Override fade-out seconds. */
+    fadeOut?: number;
 }
 
 export interface UISoundsConfig {
@@ -158,19 +219,36 @@ export interface BindUISoundsOptions {
     capture?: boolean;
 }
 
-/** Internal catalog entry for a sound. */
+/** Internal catalog entry for a one-shot sound. */
 export interface SoundEntry {
     synth: SoundSynthFn;
     throttleMs: number;
     defaultEvent: string;
-    ambient: boolean;
     /** True for library-shipped sounds (cannot unregister). */
     builtin: boolean;
 }
 
-export interface AmbientHandle {
+/** Internal catalog entry for a long-running loop. */
+export interface LoopEntry {
+    synth: LoopSynthFn;
+    fadeIn: number;
+    fadeOut: number;
+    builtin: boolean;
+}
+
+/** Runtime handle for an active loop instance. */
+export interface ActiveLoop {
     id: string;
-    stopSources: Array<{ stop: (when?: number) => void }>;
     gain: GainNode;
     ctx: AudioContext;
+    sources: Array<{ stop: (when?: number) => void }>;
+    dispose?: () => void;
+    /** Relative volume 0–1 set via startLoop / setLoopVolume. */
+    loopVolume: number;
+    /** Cached feel gainMult for master-volume updates. */
+    feelGain: number;
+    fadeOut: number;
 }
+
+/** @deprecated Use ActiveLoop */
+export type AmbientHandle = ActiveLoop;

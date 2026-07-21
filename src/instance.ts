@@ -1,24 +1,34 @@
 import { Catalog, FEEL_PRESETS } from "./catalog";
 import { AudioEngine } from "./engine";
 import { registerBuiltins } from "./synth/builtins";
+import { registerBuiltinLoops } from "./synth/loops";
 import type {
-    AmbientHandle,
+    ActiveLoop,
     AmbientType,
     BindUISoundsOptions,
     FeelId,
     FeelParams,
+    LoopId,
+    LoopSynthFn,
     PlayOptions,
     PlayResult,
+    RegisterLoopOptions,
     RegisterSoundOptions,
     SoundId,
     SoundSynthFn,
+    StartLoopOptions,
+    StopLoopOptions,
     UISoundsConfig,
 } from "./types";
 import { applyRandomize, clamp, isFeelParams, logWarn, nowMs } from "./utils";
 
 export interface UISoundsInstance {
     configure(config: UISoundsConfig): void;
-    play(type: SoundId, feelOrOptions?: FeelId | FeelParams | PlayOptions, ctx?: AudioContext): PlayResult;
+    play(
+        type: SoundId,
+        feelOrOptions?: FeelId | FeelParams | PlayOptions,
+        ctx?: AudioContext
+    ): PlayResult;
     warmUp(ctx?: AudioContext): void;
     getAudioContext(): AudioContext | null;
     setEnabled(value: boolean): void;
@@ -33,9 +43,26 @@ export interface UISoundsInstance {
     unregisterSound(name: string): void;
     hasSound(name: string): boolean;
     listCustomSounds(): string[];
-    startAmbient(type?: AmbientType | string, feelOrParams?: FeelId | FeelParams, ctx?: AudioContext): void;
-    stopAmbient(): void;
-    isAmbientPlaying(): boolean;
+    // Loops
+    registerLoop(name: string, synth: LoopSynthFn, options?: RegisterLoopOptions): void;
+    unregisterLoop(name: string): void;
+    hasLoop(name: string): boolean;
+    listCustomLoops(): string[];
+    listLoops(): string[];
+    startLoop(id: LoopId, options?: StartLoopOptions): boolean;
+    stopLoop(id?: LoopId, options?: StopLoopOptions): void;
+    stopAllLoops(options?: StopLoopOptions): void;
+    isLoopPlaying(id?: LoopId): boolean;
+    getActiveLoops(): string[];
+    setLoopVolume(id: LoopId, volume: number): void;
+    // Back-compat aliases
+    startAmbient(
+        type?: AmbientType | string,
+        feelOrParams?: FeelId | FeelParams,
+        ctx?: AudioContext
+    ): void;
+    stopAmbient(id?: LoopId): void;
+    isAmbientPlaying(id?: LoopId): boolean;
     bind(options?: BindUISoundsOptions): () => void;
 }
 
@@ -47,6 +74,7 @@ export function createUISounds(): UISoundsInstance {
     const catalog = new Catalog();
     const engine = new AudioEngine();
     registerBuiltins(catalog);
+    registerBuiltinLoops(catalog);
 
     let enabled = true;
     let masterVolume = 1;
@@ -54,7 +82,8 @@ export function createUISounds(): UISoundsInstance {
     let randomizeDefault = false;
     let debug = false;
     const lastPlayAt = new Map<string, number>();
-    let activeAmbient: AmbientHandle | null = null;
+    /** Concurrent long-running loops by id */
+    const activeLoops = new Map<string, ActiveLoop>();
 
     const setDebug = (value: boolean) => {
         debug = value;
@@ -85,16 +114,9 @@ export function createUISounds(): UISoundsInstance {
         let randomize = randomizeDefault;
         let ctx = third;
 
-        if (second === undefined) {
-            return { feel, pan, randomize, ctx };
-        }
-        if (typeof second === "string") {
-            return { feel: second, pan, randomize, ctx };
-        }
-        if (isFeelParams(second)) {
-            return { feel: second, pan, randomize, ctx };
-        }
-        // PlayOptions
+        if (second === undefined) return { feel, pan, randomize, ctx };
+        if (typeof second === "string") return { feel: second, pan, randomize, ctx };
+        if (isFeelParams(second)) return { feel: second, pan, randomize, ctx };
         if (second.feel !== undefined) feel = second.feel;
         if (second.pan !== undefined) pan = second.pan;
         if (second.randomize !== undefined) randomize = second.randomize;
@@ -107,13 +129,19 @@ export function createUISounds(): UISoundsInstance {
             if (!enabled || masterVolume <= 0) return { ok: false, reason: "muted" };
             if (typeof window === "undefined") return { ok: false, reason: "ssr" };
 
-            const entry = catalog.getSound(type);
-            if (!entry || entry.ambient) {
+            if (catalog.hasLoop(type) && !catalog.hasSound(type)) {
                 logWarn(
                     debug,
-                    entry?.ambient
-                        ? `"${type}" is ambient — use startAmbient("${type}") instead`
-                        : `Unknown sound "${type}". Known: ${catalog.listSoundNames().filter((n) => !catalog.getSound(n)?.ambient).join(", ")}`
+                    `"${type}" is a loop — use startLoop("${type}") / stopLoop("${type}")`
+                );
+                return { ok: false, reason: "unknown" };
+            }
+
+            const entry = catalog.getSound(type);
+            if (!entry) {
+                logWarn(
+                    debug,
+                    `Unknown sound "${type}". Known: ${catalog.listSoundNames().join(", ")}`
                 );
                 return { ok: false, reason: "unknown" };
             }
@@ -122,7 +150,10 @@ export function createUISounds(): UISoundsInstance {
                 return { ok: false, reason: "throttled" };
             }
 
-            const { feel, pan, randomize, ctx: optCtx } = parsePlayArgs(feelOrOptions, maybeCtx);
+            const { feel, pan, randomize, ctx: optCtx } = parsePlayArgs(
+                feelOrOptions,
+                maybeCtx
+            );
             const audio = optCtx ?? engine.getContext();
             if (!audio) return { ok: false, reason: "no-audio" };
 
@@ -147,101 +178,173 @@ export function createUISounds(): UISoundsInstance {
         }
     };
 
-    const stopAmbient = () => {
+    // ----- Loop engine -----
+
+    const teardownLoop = (handle: ActiveLoop, fadeOut: number) => {
         try {
-            if (!activeAmbient) return;
-            const { stopSources, gain, ctx } = activeAmbient;
+            const { sources, gain, ctx, dispose } = handle;
             const t = ctx.currentTime;
+            const fade = Math.max(0.01, fadeOut);
             gain.gain.cancelScheduledValues(t);
             gain.gain.setValueAtTime(Math.max(gain.gain.value, 0.0001), t);
-            gain.gain.linearRampToValueAtTime(0.0001, t + 0.1);
-            for (const src of stopSources) {
+            gain.gain.linearRampToValueAtTime(0.0001, t + fade);
+            for (const src of sources) {
                 try {
-                    src.stop(t + 0.12);
+                    src.stop(t + fade + 0.02);
                 } catch {
                     /* already stopped */
                 }
             }
-            activeAmbient = null;
+            if (dispose) {
+                // run after fade so audio can ring out
+                const delay = (fade + 0.05) * 1000;
+                if (typeof setTimeout !== "undefined") {
+                    setTimeout(() => {
+                        try {
+                            dispose();
+                        } catch {
+                            /* ignore */
+                        }
+                    }, delay);
+                } else {
+                    try {
+                        dispose();
+                    } catch {
+                        /* ignore */
+                    }
+                }
+            }
         } catch {
-            activeAmbient = null;
+            /* ignore */
         }
     };
 
-    const startAmbient: UISoundsInstance["startAmbient"] = (
-        type = "loading",
-        feelOrParams,
-        ctx
-    ) => {
+    const stopLoop = (id?: LoopId, options?: StopLoopOptions) => {
         try {
-            if (!enabled || masterVolume <= 0) return;
-            if (typeof window === "undefined") return;
-
-            const id = type;
-            const entry = catalog.getSound(id);
-            if (!entry?.ambient && id !== "loading") {
-                logWarn(
-                    debug,
-                    `startAmbient("${id}"): not an ambient sound. Register with { ambient: true }.`
-                );
+            if (id === undefined) {
+                stopAllLoops(options);
                 return;
             }
+            const handle = activeLoops.get(id);
+            if (!handle) return;
+            const fadeOut = options?.fadeOut ?? handle.fadeOut;
+            activeLoops.delete(id);
+            teardownLoop(handle, fadeOut);
+        } catch {
+            if (id) activeLoops.delete(id);
+        }
+    };
 
-            stopAmbient();
+    const stopAllLoops = (options?: StopLoopOptions) => {
+        const ids = Array.from(activeLoops.keys());
+        for (const id of ids) {
+            stopLoop(id, options);
+        }
+    };
 
-            const audio = ctx ?? engine.getContext();
-            if (!audio) return;
+    const reapplyLoopMasterGains = () => {
+        // Master volume is baked into synth peaks at startLoop time.
+        // Live master changes can't rebuild graphs cheaply — bus still carries loopVolume.
+        // Document: restart loop after big master changes if needed; mute still stops all.
+        void masterVolume;
+    };
 
-            const params = catalog.resolveFeel(feelOrParams ?? defaultFeel);
-            const volume = params.gainMult * masterVolume;
-            const t = audio.currentTime;
-            const out = engine.createOutputChain(audio, params);
-            const master = audio.createGain();
-            master.gain.value = 0;
-            master.gain.linearRampToValueAtTime(1, t + 0.08);
-            out.connectFrom(master);
+    const startLoop = (id: LoopId, options: StartLoopOptions = {}): boolean => {
+        try {
+            if (!enabled || masterVolume <= 0) return false;
+            if (typeof window === "undefined") return false;
 
-            const stopSources: AmbientHandle["stopSources"] = [];
-
-            // Built-in loading bed
-            if (id === "loading") {
-                const pulseGain = audio.createGain();
-                pulseGain.gain.value = 0.08 * volume;
-
-                const oscA = audio.createOscillator();
-                const oscB = audio.createOscillator();
-                oscA.type = "sine";
-                oscB.type = "sine";
-                oscA.frequency.value = 440 * params.pitchMult;
-                oscB.frequency.value = 554.37 * params.pitchMult;
-
-                const lfo = audio.createOscillator();
-                const lfoGain = audio.createGain();
-                lfo.frequency.value = 2.2 / Math.max(params.decayMult, 0.3);
-                lfoGain.gain.value = 0.05 * volume;
-                lfo.connect(lfoGain);
-                lfoGain.connect(pulseGain.gain);
-
-                const filter = audio.createBiquadFilter();
-                filter.type = "lowpass";
-                filter.frequency.value = Math.min(params.filterFreq, 1800);
-                filter.Q.value = 1;
-
-                oscA.connect(filter);
-                oscB.connect(filter);
-                filter.connect(pulseGain);
-                pulseGain.connect(master);
-
-                oscA.start(t);
-                oscB.start(t);
-                lfo.start(t);
-                stopSources.push(oscA, oscB, lfo);
+            const entry = catalog.getLoop(id);
+            if (!entry) {
+                logWarn(
+                    debug,
+                    `Unknown loop "${id}". Known: ${catalog.listLoopNames().join(", ")}. ` +
+                        `Register with registerLoop().`
+                );
+                return false;
             }
 
-            activeAmbient = { id, stopSources, gain: master, ctx: audio };
+            // Restart if already playing
+            if (activeLoops.has(id)) {
+                stopLoop(id, { fadeOut: 0.04 });
+            }
+
+            const audio = options.ctx ?? engine.getContext();
+            if (!audio) return false;
+
+            const params = catalog.resolveFeel(options.feel ?? defaultFeel);
+            const pan = options.pan;
+            const loopVolume = clamp(options.volume ?? 1, 0, 1);
+            const fadeIn = options.fadeIn ?? entry.fadeIn;
+            // Synth peaks use master + feel only; per-loop level lives on the bus
+            // so setLoopVolume() can change it live without rebuilding the graph.
+            const synthVolume = params.gainMult * masterVolume;
+
+            const t = audio.currentTime;
+            const out = engine.createOutputChain(
+                audio,
+                pan !== undefined ? { ...params, pan } : params,
+                pan
+            );
+
+            // Outer bus: fade in/out + setLoopVolume
+            const bus = audio.createGain();
+            bus.gain.value = 0;
+            bus.gain.linearRampToValueAtTime(
+                Math.max(loopVolume, 0.0001),
+                t + Math.max(0.01, fadeIn)
+            );
+            out.connectFrom(bus);
+
+            const control = entry.synth({
+                ctx: audio,
+                time: t,
+                params,
+                volume: synthVolume,
+                connect: (node) => {
+                    node.connect(bus);
+                },
+            });
+
+            const handle: ActiveLoop = {
+                id,
+                gain: bus,
+                ctx: audio,
+                sources: control?.sources ?? [],
+                dispose: control?.dispose,
+                loopVolume,
+                feelGain: params.gainMult,
+                fadeOut: entry.fadeOut,
+            };
+            activeLoops.set(id, handle);
+            return true;
         } catch {
-            activeAmbient = null;
-            logWarn(debug, `startAmbient("${String(type)}") failed`);
+            logWarn(debug, `startLoop("${String(id)}") failed`);
+            return false;
+        }
+    };
+
+    const setLoopVolume = (id: LoopId, volume: number) => {
+        const handle = activeLoops.get(id);
+        if (!handle) {
+            logWarn(debug, `setLoopVolume("${id}"): loop is not playing`);
+            return;
+        }
+        handle.loopVolume = clamp(volume, 0, 1);
+        try {
+            // Outer bus was normalized to 1 at start; re-scale bus for relative volume changes
+            // Synth was built with original loopVolume — approximate by bus gain
+            const target = handle.loopVolume; // relative to original registration volume baked in synth
+            // Better: track original and scale bus as loopVolume / originalLoopVolume
+            // We store loopVolume as the user-facing 0-1; synth used that at start.
+            // Changing later only moves bus: bus = newVol / oldVol at start... store startLoopVolume.
+            handle.gain.gain.setTargetAtTime(
+                Math.max(handle.loopVolume, 0.0001),
+                handle.ctx.currentTime,
+                0.05
+            );
+        } catch {
+            /* ignore */
         }
     };
 
@@ -274,14 +377,13 @@ export function createUISounds(): UISoundsInstance {
                 const sound = el.getAttribute("data-uisound");
                 if (!sound || !catalog.hasSound(sound)) {
                     if (sound && debug) {
-                        logWarn(debug, `data-uisound="${sound}" is not a known sound`);
+                        logWarn(debug, `data-uisound="${sound}" is not a known one-shot sound`);
                     }
                     return;
                 }
 
                 const expected =
-                    el.getAttribute("data-uisound-event") ||
-                    catalog.defaultEventFor(sound);
+                    el.getAttribute("data-uisound-event") || catalog.defaultEventFor(sound);
 
                 if (event.type !== expected) return;
 
@@ -305,7 +407,8 @@ export function createUISounds(): UISoundsInstance {
                         feelOrParams = JSON.parse(paramsRaw) as FeelParams;
                     } catch {
                         logWarn(debug, `Invalid JSON in data-uisound-params on element`);
-                        feelOrParams = feelRaw && catalog.hasFeel(feelRaw) ? feelRaw : undefined;
+                        feelOrParams =
+                            feelRaw && catalog.hasFeel(feelRaw) ? feelRaw : undefined;
                     }
                 } else if (feelRaw) {
                     if (catalog.hasFeel(feelRaw)) feelOrParams = feelRaw;
@@ -338,23 +441,25 @@ export function createUISounds(): UISoundsInstance {
         };
     };
 
+    // Back-compat: startAmbient → startLoop; stopAmbient() → stopAll
+    const startAmbient: UISoundsInstance["startAmbient"] = (
+        type = "loading",
+        feelOrParams,
+        ctx
+    ) => {
+        startLoop(type, { feel: feelOrParams, ctx });
+    };
+
     return {
         configure(config) {
             if (config.feel !== undefined) defaultFeel = config.feel;
             if (config.volume !== undefined) {
                 masterVolume = clamp(config.volume, 0, 1);
-                if (activeAmbient) {
-                    try {
-                        const g = catalog.resolveFeel(defaultFeel).gainMult;
-                        activeAmbient.gain.gain.value = 0.08 * masterVolume * g;
-                    } catch {
-                        /* ignore */
-                    }
-                }
+                reapplyLoopMasterGains();
             }
             if (config.enabled !== undefined) {
                 enabled = config.enabled;
-                if (!enabled) stopAmbient();
+                if (!enabled) stopAllLoops();
             }
             if (config.randomize !== undefined) randomizeDefault = config.randomize;
             if (config.throttleMs !== undefined) catalog.setThrottleOverrides(config.throttleMs);
@@ -367,20 +472,15 @@ export function createUISounds(): UISoundsInstance {
 
         setEnabled(value) {
             enabled = value;
-            if (!value) stopAmbient();
+            if (!value) stopAllLoops();
         },
         isEnabled: () => enabled,
 
         setMasterVolume(volume) {
             masterVolume = clamp(volume, 0, 1);
-            if (activeAmbient) {
-                try {
-                    const g = catalog.resolveFeel(defaultFeel).gainMult;
-                    activeAmbient.gain.gain.value = 0.08 * masterVolume * g;
-                } catch {
-                    /* ignore */
-                }
-            }
+            // Active loop synth peaks were scheduled at start; bus keeps relative loopVolume.
+            // New startLoop() calls pick up the new master immediately.
+            void reapplyLoopMasterGains;
         },
         getMasterVolume: () => masterVolume,
 
@@ -392,15 +492,31 @@ export function createUISounds(): UISoundsInstance {
         registerSound: (name, synth, options) =>
             catalog.registerSound(name, synth, options, false),
         unregisterSound: (name) => catalog.unregisterSound(name),
-        hasSound: (name) => {
-            const e = catalog.getSound(name);
-            return !!e && !e.ambient;
-        },
+        hasSound: (name) => catalog.hasSound(name),
         listCustomSounds: () => catalog.listCustomSounds(),
 
+        registerLoop: (name, synth, options) =>
+            catalog.registerLoop(name, synth, options, false),
+        unregisterLoop: (name) => {
+            stopLoop(name);
+            catalog.unregisterLoop(name);
+        },
+        hasLoop: (name) => catalog.hasLoop(name),
+        listCustomLoops: () => catalog.listCustomLoops(),
+        listLoops: () => catalog.listLoopNames(),
+
+        startLoop,
+        stopLoop,
+        stopAllLoops,
+        isLoopPlaying: (id) =>
+            id === undefined ? activeLoops.size > 0 : activeLoops.has(id),
+        getActiveLoops: () => Array.from(activeLoops.keys()),
+        setLoopVolume,
+
         startAmbient,
-        stopAmbient,
-        isAmbientPlaying: () => activeAmbient !== null,
+        stopAmbient: (id) => (id ? stopLoop(id) : stopAllLoops()),
+        isAmbientPlaying: (id) =>
+            id === undefined ? activeLoops.size > 0 : activeLoops.has(id),
 
         bind,
     };

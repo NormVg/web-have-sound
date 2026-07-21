@@ -2,10 +2,10 @@
  * @thenormvg/web-have-sounds
  *
  * Architecture:
- *   catalog  — named feels + sounds (built-ins + register*)
+ *   catalog  — named feels + one-shots + loops
  *   engine   — AudioContext, pan, warm-up
- *   pipeline — play / ambient / bind (single path)
- *   synth    — shared primitives; builtins registered like user sounds
+ *   pipeline — play / startLoop / bind
+ *   synth    — shared primitives; builtins registered like user content
  */
 
 import { getDefaultInstance, createUISounds, FEEL_PRESETS } from "./instance";
@@ -15,13 +15,21 @@ export type {
     SoundType,
     SoundId,
     AmbientType,
+    BuiltInLoopType,
+    LoopId,
     FeelType,
     FeelId,
     FeelParams,
     ResolvedFeelParams,
     SoundSynthContext,
     SoundSynthFn,
+    LoopSynthContext,
+    LoopSynthFn,
+    LoopControl,
     RegisterSoundOptions,
+    RegisterLoopOptions,
+    StartLoopOptions,
+    StopLoopOptions,
     UISoundsConfig,
     PlayOptions,
     PlayResult,
@@ -34,12 +42,11 @@ export type { UISoundsInstance } from "./instance";
 export { FEEL_PRESETS, createUISounds, synthHelpers };
 
 // ---------------------------------------------------------------------------
-// Default singleton API (most apps use these)
+// Default singleton API
 // ---------------------------------------------------------------------------
 
 const api = () => getDefaultInstance();
 
-/** Configure global defaults (feel, volume, mute, randomize, throttle, debug). */
 export function configureUISounds(
     config: import("./types").UISoundsConfig
 ): void {
@@ -47,12 +54,9 @@ export function configureUISounds(
 }
 
 /**
- * Play a UI sound (built-in or registered).
+ * Play a one-shot UI sound.
  * Never throws. Returns `{ ok: true }` or `{ ok: false, reason }`.
- *
- * @example playUISound('click')
- * @example playUISound('success', 'glass')
- * @example playUISound('notify', { feel: 'brand', pan: 0.5 })
+ * For long-running beds use `startLoop` / `stopLoop`.
  */
 export function playUISound(
     type: import("./types").SoundId,
@@ -128,6 +132,101 @@ export function listCustomSounds(): string[] {
     return api().listCustomSounds();
 }
 
+// ---------------------------------------------------------------------------
+// Loops (long-running / ambient beds)
+// ---------------------------------------------------------------------------
+
+/**
+ * Register a custom long-running loop.
+ * Your synth starts continuous sources and returns `{ sources }` so stop can end them.
+ *
+ * @example
+ * ```ts
+ * registerLoop('upload', ({ ctx, time, params, volume, connect }) => {
+ *   const osc = ctx.createOscillator();
+ *   const gain = ctx.createGain();
+ *   osc.frequency.value = 220 * params.pitchMult;
+ *   gain.gain.value = 0.06 * volume;
+ *   osc.connect(gain);
+ *   connect(gain);
+ *   osc.start(time);
+ *   return { sources: [osc] };
+ * }, { fadeIn: 0.1, fadeOut: 0.2 });
+ *
+ * startLoop('upload');
+ * // …
+ * stopLoop('upload');
+ * ```
+ */
+export function registerLoop(
+    name: string,
+    synthFn: import("./types").LoopSynthFn,
+    options?: import("./types").RegisterLoopOptions
+): void {
+    api().registerLoop(name, synthFn, options);
+}
+
+export function unregisterLoop(name: string): void {
+    api().unregisterLoop(name);
+}
+
+export function hasLoop(name: string): boolean {
+    return api().hasLoop(name);
+}
+
+export function listCustomLoops(): string[] {
+    return api().listCustomLoops();
+}
+
+/** All known loop ids (built-in + custom). */
+export function listLoops(): string[] {
+    return api().listLoops();
+}
+
+/**
+ * Start a long-running loop by id. Multiple loops can run at once.
+ * Re-starting the same id restarts it. Returns false if muted / unknown / no audio.
+ */
+export function startLoop(
+    id: import("./types").LoopId,
+    options?: import("./types").StartLoopOptions
+): boolean {
+    return api().startLoop(id, options);
+}
+
+/**
+ * Stop one loop, or all loops if `id` is omitted.
+ */
+export function stopLoop(
+    id?: import("./types").LoopId,
+    options?: import("./types").StopLoopOptions
+): void {
+    api().stopLoop(id, options);
+}
+
+export function stopAllLoops(options?: import("./types").StopLoopOptions): void {
+    api().stopAllLoops(options);
+}
+
+/** If `id` omitted, true when any loop is active. */
+export function isLoopPlaying(id?: import("./types").LoopId): boolean {
+    return api().isLoopPlaying(id);
+}
+
+export function getActiveLoops(): string[] {
+    return api().getActiveLoops();
+}
+
+/** Live relative volume for a playing loop (0–1). */
+export function setLoopVolume(id: import("./types").LoopId, volume: number): void {
+    api().setLoopVolume(id, volume);
+}
+
+// ---------------------------------------------------------------------------
+// Back-compat ambient aliases → loop API
+// ---------------------------------------------------------------------------
+
+/** @deprecated Prefer `startLoop('loading')` — same behavior, multi-loop capable. */
 export function startAmbient(
     type: import("./types").AmbientType | string = "loading",
     feelOrParams?: import("./types").FeelId | import("./types").FeelParams,
@@ -136,16 +235,18 @@ export function startAmbient(
     api().startAmbient(type, feelOrParams, ctx);
 }
 
-export function stopAmbient(): void {
-    api().stopAmbient();
+/** @deprecated Prefer `stopLoop(id)` or `stopAllLoops()`. */
+export function stopAmbient(id?: import("./types").LoopId): void {
+    api().stopAmbient(id);
 }
 
-export function isAmbientPlaying(): boolean {
-    return api().isAmbientPlaying();
+/** @deprecated Prefer `isLoopPlaying(id)`. */
+export function isAmbientPlaying(id?: import("./types").LoopId): boolean {
+    return api().isAmbientPlaying(id);
 }
 
 /**
- * Declarative binding for `data-uisound` attributes.
+ * Declarative binding for `data-uisound` attributes (one-shots only).
  * @returns unbind function
  */
 export function bindUISounds(

@@ -11,7 +11,8 @@ Procedural UI sounds via the Web Audio API — zero dependencies, zero audio fil
 
 - Zero dependencies, instant synth (no buffers to decode)
 - 9 Feels + full `FeelParams` (ADSR, pan, pitch)
-- 20+ built-in interaction sounds + loopable ambient `loading`
+- 20+ built-in interaction sounds + **multi-loop system** (`loading`, `processing`, `pulse`, `hum` + custom)
+- Concurrent long-running beds with fade in/out, per-loop volume, `registerLoop`
 - `registerFeel` / `registerSound` — define once, use app-wide (including `data-uisound`)
 - SSR-safe, silent failure, autoplay-safe resume
 - Master mute + volume, spam throttling, optional randomization
@@ -122,13 +123,82 @@ One shared `AudioContext` is created lazily. Override per call with `{ ctx }` or
 | `startup` | Session / boot |
 | `connect` / `disconnect` | Online / websocket |
 
-### Ambient
+### Loops (long-running / ambient beds)
+
+One-shots fire and die. **Loops** keep running until you stop them — uploads, sync, focus mode, recording.
+
+Built-ins: `loading` · `processing` · `pulse` · `hum`
 
 ```js
-startAmbient('loading');
-// … work …
-stopAmbient();
+import {
+  startLoop,
+  stopLoop,
+  stopAllLoops,
+  isLoopPlaying,
+  setLoopVolume,
+} from '@thenormvg/web-have-sounds';
+
+// Multiple loops can run together
+startLoop('loading', { feel: 'soft' });
+startLoop('hum', { volume: 0.4, fadeIn: 0.3 });
+
+setLoopVolume('loading', 0.5);
+
+// … upload finished …
+stopLoop('loading');
+stopAllLoops(); // or stopLoop() with no id
 ```
+
+| API | Role |
+|-----|------|
+| `startLoop(id, opts?)` | Start / restart a loop (`feel`, `pan`, `volume`, `fadeIn`, `ctx`) |
+| `stopLoop(id?, opts?)` | Stop one, or all if id omitted (`fadeOut`) |
+| `stopAllLoops()` | Stop everything |
+| `isLoopPlaying(id?)` | Any active, or specific id |
+| `getActiveLoops()` | List of running ids |
+| `setLoopVolume(id, 0–1)` | Live level while playing |
+| `registerLoop(name, synth, opts?)` | Custom long-running bed |
+
+#### Custom loop
+
+```js
+registerLoop(
+  'upload',
+  ({ ctx, time, params, volume, connect }) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const lfo = ctx.createOscillator();
+    const lfoGain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.value = 330 * params.pitchMult;
+    gain.gain.value = 0.06 * volume;
+
+    lfo.frequency.value = 3;
+    lfoGain.gain.value = 0.03 * volume;
+    lfo.connect(lfoGain);
+    lfoGain.connect(gain.gain);
+
+    osc.connect(gain);
+    connect(gain);
+    osc.start(time);
+    lfo.start(time);
+
+    // Return sources so stopLoop can end them after fade-out
+    return { sources: [osc, lfo] };
+  },
+  { fadeIn: 0.1, fadeOut: 0.25 }
+);
+
+startLoop('upload');
+// …
+stopLoop('upload');
+```
+
+`LoopSynthContext` mirrors one-shots: `ctx`, `time`, `params`, `volume`, `connect`.  
+Return `{ sources, dispose? }` so teardown is clean.
+
+> **Aliases:** `startAmbient` / `stopAmbient` / `isAmbientPlaying` still work and map to the loop API.
 
 ---
 
@@ -238,7 +308,10 @@ Default package functions use a shared singleton — fine for most apps.
 | `setUISoundsEnabled` / `setMasterVolume` | Mute & level |
 | `registerFeel` / `registerSound` | Catalog |
 | `hasFeel` / `hasSound` / `listCustom*` | Introspection |
-| `startAmbient` / `stopAmbient` | Looping beds |
+| `startLoop` / `stopLoop` / `stopAllLoops` | Long-running beds |
+| `registerLoop` / `hasLoop` / `listLoops` | Custom loops |
+| `setLoopVolume` / `getActiveLoops` / `isLoopPlaying` | Loop control |
+| `startAmbient` / `stopAmbient` | Deprecated aliases → loop API |
 | `bindUISounds` | DOM attributes |
 | `createUISounds` | Isolated instance |
 | `synthHelpers` / `FEEL_PRESETS` | Power tools |
