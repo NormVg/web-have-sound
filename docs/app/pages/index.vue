@@ -447,7 +447,8 @@ function toggleBed(id: BuiltInLoopType) {
     ambientOn[id] = false
   }
   else {
-    loop.start(id, { volume: 0.4 })
+    // Beds are soft by design; bus a bit higher so pulse/hum read on laptop speakers
+    loop.start(id, { volume: 0.85 })
     ambientOn[id] = true
   }
 }
