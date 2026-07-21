@@ -347,7 +347,9 @@ const daw = useDaw((sound, feelOrParams) => {
 })
 
 const gridStyle = computed(() => ({
-  gridTemplateColumns: `minmax(220px, 240px) repeat(${daw.stepCount.value}, 28px)`,
+  // Step columns flex so the pattern fills the panel (no dead empty zone on the right)
+  gridTemplateColumns: `minmax(200px, 220px) repeat(${daw.stepCount.value}, minmax(26px, 1fr))`,
+  width: '100%',
 }))
 
 function unlock() {

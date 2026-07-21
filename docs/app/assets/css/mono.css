@@ -399,14 +399,17 @@
 .mono-seq-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  margin: 0 -4px;
-  padding: 4px;
+  margin: 0;
+  padding: 2px 0;
+  width: 100%;
 }
 
 .mono-seq-grid {
   display: grid;
   gap: 6px;
-  min-width: min-content;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
 }
 
 .mono-seq-hcell {
@@ -415,7 +418,8 @@
   text-align: center;
   color: var(--m-faint);
   font-variant-numeric: tabular-nums;
-  min-width: 28px;
+  min-width: 0;
+  width: 100%;
 }
 
 .mono-seq-hcell.is-beat {
@@ -433,7 +437,8 @@
   flex-direction: column;
   justify-content: center;
   gap: 6px;
-  min-width: 220px;
+  min-width: 0;
+  width: 100%;
   padding: 6px 10px 6px 4px;
   border-right: 1px solid var(--m-border);
   border-radius: var(--m-radius-sm) 0 0 var(--m-radius-sm);
@@ -487,12 +492,16 @@
 }
 
 .mono-cell {
-  width: 28px;
-  height: 28px;
-  min-width: 28px;
+  width: 100%;
+  min-width: 0;
+  height: 30px;
+  min-height: 30px;
+  aspect-ratio: 1;
+  max-height: 36px;
   border-radius: 7px;
   border: 1px solid var(--m-border-strong);
   background: var(--m-elevated);
+  justify-self: stretch;
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.02) inset,
     0 1px 3px rgba(0, 0, 0, 0.35);
