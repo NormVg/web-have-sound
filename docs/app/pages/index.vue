@@ -1,240 +1,497 @@
 <template>
-  <div class="home">
-    <header class="home-nav">
-      <span class="home-logo">web-have-sounds</span>
-      <nav>
-        <NuxtLink to="/docs">Docs</NuxtLink>
-        <NuxtLink to="/playground" class="home-cta-link">Studio</NuxtLink>
+  <div class="desk-os">
+    <header class="desk-menubar">
+      <NuxtLink to="/" class="desk-menubar-brand">
+        <AudioLines :size="16" :stroke-width="2.2" aria-hidden="true" />
+        web-have-sounds
+      </NuxtLink>
+      <nav class="desk-menubar-nav" aria-label="Primary">
+        <NuxtLink to="/docs">
+          <BookOpen :size="14" :stroke-width="2" aria-hidden="true" />
+          Docs
+        </NuxtLink>
+        <a
+          href="https://github.com/NormVg/web-have-sound"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <FolderGit2 :size="14" :stroke-width="2" aria-hidden="true" />
+          GitHub
+        </a>
       </nav>
     </header>
 
-    <section class="home-hero">
-      <p class="home-kicker">Procedural UI audio</p>
-      <h1>Make beats with the same library your product will ship.</h1>
-      <p class="home-lede">
-        Zero samples. Pure Web Audio. A 16-step looper playground where Feels
-        become kits and loops become beds.
-      </p>
-      <div class="home-actions">
-        <NuxtLink class="home-btn primary" to="/playground">
-          Open Pulse Studio
-        </NuxtLink>
-        <NuxtLink class="home-btn" to="/docs/getting-started">
-          Read the docs
-        </NuxtLink>
-      </div>
-    </section>
+    <div class="desk-desktop">
+      <!-- Transport -->
+      <section class="desk-window" aria-label="Transport">
+        <div class="desk-titlebar">
+          <div class="desk-titlebar-left">
+            <Gauge :size="14" :stroke-width="2" aria-hidden="true" />
+            <span>Transport</span>
+          </div>
+        </div>
+        <div class="desk-window-body">
+          <div class="desk-transport">
+            <div class="desk-transport-group">
+              <button
+                type="button"
+                class="desk-btn is-primary"
+                :class="{ 'is-active': daw.playing.value }"
+                :aria-pressed="daw.playing.value"
+                @click="onTogglePlay"
+              >
+                <Pause v-if="daw.playing.value" :size="16" :stroke-width="2.2" aria-hidden="true" />
+                <Play v-else :size="16" :stroke-width="2.2" aria-hidden="true" />
+                {{ daw.playing.value ? 'Playing' : 'Play' }}
+              </button>
+              <button type="button" class="desk-btn" @click="daw.stop()">
+                <Square :size="14" :stroke-width="2.2" aria-hidden="true" />
+                Stop
+              </button>
+              <button type="button" class="desk-btn" @click="onDemo">
+                <Sparkles :size="14" :stroke-width="2" aria-hidden="true" />
+                Demo
+              </button>
+              <button type="button" class="desk-btn is-danger" @click="onClear">
+                <Eraser :size="14" :stroke-width="2" aria-hidden="true" />
+                Clear
+              </button>
+            </div>
 
-    <section class="home-features">
-      <article>
-        <h2>One-shots</h2>
-        <p>Clicks, pads, notifies, and more. Throttled, muted, SSR-safe.</p>
-      </article>
-      <article>
-        <h2>Feels</h2>
-        <p>Nine sonic palettes, or register your own brand kit once.</p>
-      </article>
-      <article>
-        <h2>Loops</h2>
-        <p>Long-running beds with fade in/out for loading and focus states.</p>
-      </article>
-    </section>
+            <div class="desk-field" style="min-width: 140px">
+              <span class="desk-label">BPM</span>
+              <div style="display: flex; align-items: center; gap: 8px">
+                <input
+                  type="range"
+                  min="60"
+                  max="180"
+                  :value="daw.bpm.value"
+                  style="accent-color: var(--desk-ink); width: 100px"
+                  aria-label="Beats per minute"
+                  @input="onBpm"
+                >
+                <span style="font-family: var(--desk-font); font-variant-numeric: tabular-nums; min-width: 3ch">
+                  {{ daw.bpm.value }}
+                </span>
+              </div>
+            </div>
+
+            <div class="desk-field" style="min-width: 120px">
+              <span class="desk-label">Master</span>
+              <div style="display: flex; align-items: center; gap: 8px">
+                <Volume2 :size="14" :stroke-width="2" aria-hidden="true" />
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  :value="volume"
+                  style="accent-color: var(--desk-ink); width: 90px"
+                  aria-label="Master volume"
+                  @input="onVolume"
+                >
+              </div>
+            </div>
+
+            <div class="desk-step-badge" aria-live="polite">
+              {{ daw.step.value < 0 ? '--' : String(daw.step.value + 1).padStart(2, '0') }}
+              <span class="desk-step-sub">step / 16</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sequencer -->
+      <section class="desk-window" aria-label="Sequencer">
+        <div class="desk-titlebar">
+          <div class="desk-titlebar-left">
+            <Grid3x3 :size="14" :stroke-width="2" aria-hidden="true" />
+            <span>16-step · each track owns sound + feel</span>
+          </div>
+        </div>
+        <div class="desk-window-body">
+          <div class="desk-seq-scroll">
+            <div class="desk-seq-grid" role="grid">
+              <div />
+              <div
+                v-for="i in daw.DAW_STEPS"
+                :key="`h-${i}`"
+                class="desk-seq-head"
+                :class="{
+                  'is-beat': (i - 1) % 4 === 0,
+                  'is-play': daw.step.value === i - 1,
+                }"
+              >
+                {{ i }}
+              </div>
+
+              <template v-for="track in daw.tracks.value" :key="track.id">
+                <div class="desk-track-meta">
+                  <div class="desk-track-top">
+                    <span class="desk-track-name">{{ track.name }}</span>
+                    <button
+                      type="button"
+                      class="desk-icon-btn"
+                      :class="{ 'is-on': track.muted }"
+                      :aria-label="track.muted ? 'Unmute' : 'Mute'"
+                      @click="toggleMute(track.id)"
+                    >
+                      <VolumeX v-if="track.muted" :size="14" :stroke-width="2" />
+                      <Volume2 v-else :size="14" :stroke-width="2" />
+                    </button>
+                    <button
+                      type="button"
+                      class="desk-icon-btn"
+                      aria-label="Edit sound"
+                      @click="openEditor(track.id)"
+                    >
+                      <SlidersHorizontal :size="14" :stroke-width="2" />
+                    </button>
+                  </div>
+                  <div class="desk-track-selects">
+                    <select
+                      class="desk-select"
+                      :value="track.sound"
+                      :aria-label="`${track.name} sound`"
+                      @change="onTrackSound(track.id, $event)"
+                    >
+                      <option v-for="s in sounds" :key="s" :value="s">{{ s }}</option>
+                    </select>
+                    <select
+                      class="desk-select"
+                      :value="track.useCustom ? '__custom__' : track.feel"
+                      :aria-label="`${track.name} feel`"
+                      @change="onTrackFeel(track.id, $event)"
+                    >
+                      <option v-for="f in feels" :key="f" :value="f">{{ f }}</option>
+                      <option v-if="track.useCustom" value="__custom__">custom</option>
+                    </select>
+                    <button
+                      type="button"
+                      class="desk-icon-btn"
+                      aria-label="Preview track"
+                      @click="preview(track.id)"
+                    >
+                      <Play :size="14" :stroke-width="2.2" />
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  v-for="(on, i) in track.steps"
+                  :key="`${track.id}-${i}`"
+                  type="button"
+                  class="desk-cell"
+                  role="gridcell"
+                  :class="{
+                    'is-on': on,
+                    'is-playhead': daw.step.value === i,
+                  }"
+                  :aria-pressed="on"
+                  :aria-label="`${track.name} step ${i + 1}`"
+                  @click="onCell(track.id, i)"
+                />
+              </template>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="desk-split">
+        <!-- Pads -->
+        <section class="desk-window" aria-label="Live pads">
+          <div class="desk-titlebar">
+            <div class="desk-titlebar-left">
+              <Hand :size="14" :stroke-width="2" aria-hidden="true" />
+              <span>Live pads</span>
+            </div>
+          </div>
+          <div class="desk-window-body">
+            <div class="desk-pads">
+              <button
+                v-for="track in daw.tracks.value"
+                :key="`pad-${track.id}`"
+                type="button"
+                class="desk-pad"
+                :class="{ 'is-hit': hitId === track.id }"
+                @pointerdown.prevent="onPad(track.id)"
+              >
+                <span class="desk-pad-name">{{ track.name }}</span>
+                <span class="desk-pad-meta">
+                  {{ track.sound }} · {{ track.useCustom ? 'custom' : track.feel }}
+                </span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Ambient -->
+        <section class="desk-window" aria-label="Ambient beds">
+          <div class="desk-titlebar">
+            <div class="desk-titlebar-left">
+              <Waves :size="14" :stroke-width="2" aria-hidden="true" />
+              <span>Ambient beds</span>
+            </div>
+          </div>
+          <div class="desk-window-body">
+            <p style="font-size: 12px; margin-bottom: 10px; opacity: 0.8">
+              Long-running loops. Independent of the step grid.
+            </p>
+            <div class="desk-chips">
+              <button
+                v-for="bed in beds"
+                :key="bed"
+                type="button"
+                class="desk-chip"
+                :class="{ 'is-on': ambientOn[bed] }"
+                @click="toggleBed(bed)"
+              >
+                <Circle v-if="!ambientOn[bed]" :size="10" :stroke-width="2.5" aria-hidden="true" />
+                <CircleDot v-else :size="10" :stroke-width="2.5" aria-hidden="true" />
+                {{ bed }}
+              </button>
+              <button type="button" class="desk-chip" @click="stopBeds">
+                <Square :size="10" :stroke-width="2.5" aria-hidden="true" />
+                stop
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <footer class="desk-footer">
+        <span>Procedural Web Audio · no samples</span>
+        <NuxtLink to="/docs/getting-started">Ship this in your app</NuxtLink>
+      </footer>
+    </div>
+
+    <!-- Sound editor -->
+    <DeskSoundEditor
+      :track="daw.editorTrack.value"
+      :presets="daw.customPresets.value"
+      @close="daw.closeEditor()"
+      @preview="onEditorPreview"
+      @update-sound="onEditorSound"
+      @update-feel-seed="onEditorFeel"
+      @update-param="onEditorParam"
+      @save-preset="onEditorSave"
+      @apply-preset="onEditorApply"
+    />
+
+    <!-- Unlock gate -->
+    <div v-if="!unlocked" class="desk-gate" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+      <div class="desk-window">
+        <div class="desk-titlebar">
+          <div class="desk-titlebar-left">
+            <Volume2 :size="14" :stroke-width="2" aria-hidden="true" />
+            <span id="gate-title">Audio locked</span>
+          </div>
+        </div>
+        <div class="desk-window-body desk-gate-body">
+          <p>
+            Browsers keep Web Audio suspended until a gesture. Click once to unlock
+            the engine and open the desk.
+          </p>
+          <button type="button" class="desk-btn is-primary" @click="unlock">
+            <Power :size="14" :stroke-width="2.2" aria-hidden="true" />
+            Unlock audio
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import {
+  AudioLines,
+  BookOpen,
+  Circle,
+  CircleDot,
+  Eraser,
+  Gauge,
+  FolderGit2,
+  Grid3x3,
+  Hand,
+  Pause,
+  Play,
+  Power,
+  SlidersHorizontal,
+  Sparkles,
+  Square,
+  Volume2,
+  VolumeX,
+  Waves,
+} from '@lucide/vue'
+import type { BuiltInLoopType, FeelParams, FeelType, SoundType } from '@thenormvg/web-have-sounds'
+import { DAW_FEELS, DAW_SOUNDS } from '~/composables/useDaw'
+import DeskSoundEditor from '~/components/desk/SoundEditor.vue'
+
 definePageMeta({ layout: false })
 
 useSeoMeta({
-  title: 'web-have-sounds',
-  description:
-    'Procedural UI sounds for the web. Interactive looper playground and docs.',
+  title: 'web-have-sounds · Desk',
+  description: '16-step procedural sound desk. Per-track feel and custom knobs.',
 })
 
 useHead({
-  htmlAttrs: { class: 'studio-html' },
-  bodyAttrs: { class: 'studio-body' },
   link: [
     { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
     { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
     {
       rel: 'stylesheet',
-      href: 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@600;700&display=swap',
+      href: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap',
     },
   ],
 })
-</script>
 
-<style>
-html.studio-html,
-body.studio-body {
-  margin: 0;
-  background: #0a0a0a;
-}
-</style>
+const { play, loop, setVolume, configure, warmUp } = useSounds()
 
-<style scoped>
-.home {
-  --bg: #0a0a0a;
-  --surface: #141414;
-  --border: rgba(255, 255, 255, 0.08);
-  --text: #efefef;
-  --muted: rgba(255, 255, 255, 0.55);
-  --accent: #c4783a;
-  min-height: 100dvh;
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'DM Sans', system-ui, sans-serif;
-  padding: 0 24px 64px;
+const unlocked = ref(false)
+const volume = ref(0.85)
+const hitId = ref<string | null>(null)
+const ambientOn = reactive<Record<string, boolean>>({})
+
+const sounds = DAW_SOUNDS
+const feels = DAW_FEELS
+const beds: BuiltInLoopType[] = ['loading', 'processing', 'pulse', 'hum']
+
+const daw = useDaw((sound, feelOrParams) => {
+  play(sound, feelOrParams)
+})
+
+function unlock() {
+  warmUp()
+  configure({ volume: volume.value, randomize: false, debug: import.meta.dev })
+  unlocked.value = true
+  play('startup', 'aero')
 }
 
-.home-nav {
-  max-width: 1080px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  min-height: 64px;
-  border-bottom: 1px solid var(--border);
+function ensure() {
+  if (!unlocked.value) unlock()
 }
 
-.home-logo {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  letter-spacing: -0.03em;
+function onTogglePlay() {
+  ensure()
+  daw.togglePlay()
 }
 
-.home-nav nav {
-  display: flex;
-  gap: 16px;
-  align-items: center;
+function onDemo() {
+  ensure()
+  daw.loadDemo()
+  play('select', 'aero')
 }
 
-.home-nav a {
-  color: var(--muted);
-  text-decoration: none;
-  font-size: 14px;
+function onClear() {
+  daw.clearAll()
+  play('deselect', 'minimal')
 }
 
-.home-nav a:hover {
-  color: var(--text);
+function onBpm(e: Event) {
+  daw.setBpm(Number((e.target as HTMLInputElement).value))
 }
 
-.home-cta-link {
-  color: var(--accent) !important;
-  font-weight: 600;
+function onVolume(e: Event) {
+  volume.value = Number((e.target as HTMLInputElement).value)
+  setVolume(volume.value)
 }
 
-.home-hero {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 64px 0 48px;
+function onCell(trackId: string, index: number) {
+  ensure()
+  daw.toggleStep(trackId, index)
 }
 
-.home-kicker {
-  margin: 0 0 12px;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-  font-family: ui-monospace, monospace;
+function onTrackSound(trackId: string, e: Event) {
+  ensure()
+  daw.setTrackSound(trackId, (e.target as HTMLSelectElement).value as SoundType)
+  daw.previewTrack(trackId)
 }
 
-.home-hero h1 {
-  margin: 0 0 16px;
-  font-family: 'Syne', sans-serif;
-  font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 1.1;
-  text-wrap: balance;
+function onTrackFeel(trackId: string, e: Event) {
+  ensure()
+  const v = (e.target as HTMLSelectElement).value
+  if (v === '__custom__') return
+  daw.setTrackFeel(trackId, v as FeelType)
+  daw.previewTrack(trackId)
 }
 
-.home-lede {
-  margin: 0 0 28px;
-  color: var(--muted);
-  font-size: 17px;
-  line-height: 1.65;
-  max-width: 48ch;
+function toggleMute(trackId: string) {
+  const t = daw.tracks.value.find(x => x.id === trackId)
+  if (!t) return
+  daw.updateTrack(trackId, { muted: !t.muted })
 }
 
-.home-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+function openEditor(trackId: string) {
+  ensure()
+  daw.openEditor(trackId)
 }
 
-.home-btn {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 0 20px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 14px;
-  transition:
-    transform 140ms cubic-bezier(0.34, 1.56, 0.64, 1),
-    background 140ms ease,
-    border-color 140ms ease;
+function preview(trackId: string) {
+  ensure()
+  daw.previewTrack(trackId)
 }
 
-.home-btn:hover {
-  border-color: rgba(255, 255, 255, 0.22);
-  text-decoration: none;
+function onPad(trackId: string) {
+  ensure()
+  hitId.value = trackId
+  daw.previewTrack(trackId)
+  window.setTimeout(() => {
+    if (hitId.value === trackId) hitId.value = null
+  }, 120)
 }
 
-.home-btn:active {
-  transform: scale(0.96);
-}
-
-.home-btn.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #0a0a0a;
-  font-weight: 600;
-}
-
-.home-btn.primary:hover {
-  background: #d4894a;
-  border-color: #d4894a;
-}
-
-.home-features {
-  max-width: 1080px;
-  margin: 0 auto;
-  display: grid;
-  gap: 16px;
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 800px) {
-  .home-features {
-    grid-template-columns: repeat(3, 1fr);
+function toggleBed(id: BuiltInLoopType) {
+  ensure()
+  if (ambientOn[id]) {
+    loop.stop(id)
+    ambientOn[id] = false
+  }
+  else {
+    loop.start(id, { volume: 0.4 })
+    ambientOn[id] = true
   }
 }
 
-.home-features article {
-  padding: 24px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--surface);
+function stopBeds() {
+  loop.stopAll()
+  for (const k of Object.keys(ambientOn)) ambientOn[k] = false
 }
 
-.home-features h2 {
-  margin: 0 0 8px;
-  font-family: 'Syne', sans-serif;
-  font-size: 17px;
-  font-weight: 600;
+function onEditorPreview() {
+  if (daw.editorTrackId.value) daw.previewTrack(daw.editorTrackId.value)
 }
 
-.home-features p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.55;
+function onEditorSound(s: SoundType) {
+  if (!daw.editorTrackId.value) return
+  daw.setTrackSound(daw.editorTrackId.value, s)
 }
-</style>
+
+function onEditorFeel(f: FeelType) {
+  if (!daw.editorTrackId.value) return
+  daw.setTrackFeel(daw.editorTrackId.value, f)
+}
+
+function onEditorParam(key: keyof FeelParams, value: number | OscillatorType) {
+  if (!daw.editorTrackId.value) return
+  daw.setCustomParam(daw.editorTrackId.value, key, value)
+}
+
+function onEditorSave(name: string) {
+  if (!daw.editorTrackId.value) return
+  daw.savePreset(daw.editorTrackId.value, name)
+  play('success', 'soft')
+}
+
+function onEditorApply(presetId: string) {
+  if (!daw.editorTrackId.value) return
+  daw.applyPreset(daw.editorTrackId.value, presetId)
+  daw.previewTrack(daw.editorTrackId.value)
+}
+
+onBeforeUnmount(() => {
+  daw.stop()
+  stopBeds()
+})
+</script>
+
+<style src="~/assets/css/desk-os.css"></style>

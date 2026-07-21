@@ -9,6 +9,7 @@ import {
   warmUpAudio,
   isLoopPlaying,
   type FeelId,
+  type FeelParams,
   type LoopId,
   type PlayOptions,
   type SoundId,
@@ -22,7 +23,7 @@ import {
 export function useSounds() {
   const play = (
     type: SoundId,
-    feelOrOptions?: FeelId | PlayOptions,
+    feelOrOptions?: FeelId | FeelParams | PlayOptions,
   ) => {
     if (import.meta.server) return { ok: false as const, reason: 'ssr' as const }
     return playUISound(type, feelOrOptions)

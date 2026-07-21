@@ -45,6 +45,4 @@ export default defineNuxtConfig({
   },
 
   css: ['~/assets/css/base.css'],
-
-  // Home + studio use their own chrome; docs use default/docs layouts
 })
