@@ -1,12 +1,12 @@
 <template>
-  <div class="site">
+  <div class="site site-docs-chrome">
     <header class="site-header">
-      <NuxtLink to="/" class="site-brand" @click="ping('click')">
+      <NuxtLink to="/" class="site-brand">
         web-have-sounds
       </NuxtLink>
       <nav class="site-nav" aria-label="Primary">
-        <NuxtLink to="/docs" @click="ping('tick')">Docs</NuxtLink>
-        <NuxtLink to="/playground" @click="ping('tick')">Playground</NuxtLink>
+        <NuxtLink to="/docs">Docs</NuxtLink>
+        <NuxtLink to="/playground">Studio</NuxtLink>
         <a
           href="https://github.com/NormVg/web-have-sound"
           target="_blank"
@@ -26,13 +26,3 @@
     </footer>
   </div>
 </template>
-
-<script setup lang="ts">
-import type { SoundId } from '@thenormvg/web-have-sounds'
-
-const { play } = useSounds()
-
-function ping(type: SoundId) {
-  play(type)
-}
-</script>
