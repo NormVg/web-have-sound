@@ -1,4 +1,4 @@
-/* Global reset — Desk OS pages own their chrome */
+/* Global reset — dark instrument pages own chrome */
 *,
 *::before,
 *::after {
@@ -8,20 +8,22 @@
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color-scheme: dark;
 }
 
 body {
   margin: 0;
   min-height: 100dvh;
-  background: #fafaf9;
-  color: #111111;
+  background: #0a0a0b;
+  color: #f4f4f5;
 }
 
 code {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 0.9em;
-  padding: 0.1em 0.3em;
-  border: 1px solid rgba(17, 17, 17, 0.1);
-  background: #fff;
+  padding: 0.1em 0.35em;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #1a1a1e;
   border-radius: 4px;
+  color: #e8e4dc;
 }

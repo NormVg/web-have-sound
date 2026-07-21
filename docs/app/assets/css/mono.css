@@ -1,27 +1,57 @@
-/* Soft monochrome + Swiss DAW
-   Paper white, near-black type, hairlines, almost no color */
+/* Dark instrument UI — layered surfaces + real depth shadows
+   Swiss structure kept. Warm off-white accent only. */
 
 :root {
-  --m-bg: #fafaf9;
-  --m-surface: #ffffff;
-  --m-elevated: #f4f4f3;
-  --m-border: rgba(17, 17, 17, 0.08);
-  --m-border-strong: rgba(17, 17, 17, 0.14);
-  --m-text: #111111;
-  --m-muted: #737373;
-  --m-faint: #a3a3a3;
-  --m-ink: #111111;
-  --m-ink-soft: rgba(17, 17, 17, 0.06);
-  --m-radius: 10px;
-  --m-radius-sm: 6px;
+  --m-bg: #0a0a0b;
+  --m-surface: #121214;
+  --m-elevated: #1a1a1e;
+  --m-raised: #222228;
+  --m-border: rgba(255, 255, 255, 0.06);
+  --m-border-strong: rgba(255, 255, 255, 0.1);
+  --m-border-hi: rgba(255, 255, 255, 0.14);
+  --m-text: #f4f4f5;
+  --m-muted: #a1a1aa;
+  --m-faint: #71717a;
+  --m-ink: #e8e4dc;
+  --m-ink-soft: rgba(232, 228, 220, 0.08);
+  --m-ink-deep: #0a0a0b;
+  --m-radius: 12px;
+  --m-radius-sm: 8px;
+  --m-radius-lg: 18px;
   --m-font: 'Inter', 'DM Sans', system-ui, sans-serif;
   --m-mono: 'JetBrains Mono', ui-monospace, monospace;
   --m-ease: cubic-bezier(0.19, 1, 0.22, 1);
+  --m-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  --shadow-panel:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 1px 0 rgba(255, 255, 255, 0.03),
+    0 16px 48px rgba(0, 0, 0, 0.55),
+    0 4px 14px rgba(0, 0, 0, 0.4);
+
+  --shadow-bar:
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 1px 0 rgba(255, 255, 255, 0.04),
+    0 10px 36px rgba(0, 0, 0, 0.55),
+    0 2px 8px rgba(0, 0, 0, 0.35);
+
+  --shadow-float:
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 24px 64px rgba(0, 0, 0, 0.65),
+    0 8px 24px rgba(0, 0, 0, 0.45);
+
+  --shadow-cell-on:
+    0 0 0 1px rgba(255, 255, 255, 0.14) inset,
+    0 2px 8px rgba(0, 0, 0, 0.45),
+    0 0 18px rgba(232, 228, 220, 0.1);
 }
 
 .mono-app {
   min-height: 100dvh;
-  background: var(--m-bg);
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(232, 228, 220, 0.04), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(255, 255, 255, 0.02), transparent 45%),
+    var(--m-bg);
   color: var(--m-text);
   font-family: var(--m-font);
   font-size: 14px;
@@ -55,14 +85,14 @@
 }
 
 .mono-app button:disabled {
-  opacity: 0.35;
+  opacity: 0.32;
   pointer-events: none;
 }
 
 .mono-app button:focus-visible,
 .mono-app select:focus-visible,
 .mono-app input:focus-visible {
-  outline: 2px solid var(--m-text);
+  outline: 2px solid rgba(232, 228, 220, 0.45);
   outline-offset: 2px;
 }
 
@@ -75,7 +105,9 @@
   min-height: 56px;
   padding: 0 24px;
   border-bottom: 1px solid var(--m-border);
-  background: var(--m-surface);
+  background: rgba(12, 12, 14, 0.85);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .mono-brand {
@@ -105,7 +137,9 @@
   color: var(--m-muted);
   text-decoration: none;
   font-size: 13px;
-  transition: color 120ms var(--m-ease), background 120ms var(--m-ease);
+  transition:
+    color 140ms var(--m-ease),
+    background 140ms var(--m-ease);
 }
 
 .mono-nav-links a:hover,
@@ -116,12 +150,12 @@
 
 /* Shell */
 .mono-shell {
-  width: min(1120px, 100% - 32px);
+  width: min(1140px, 100% - 32px);
   margin: 0 auto;
-  padding: 28px 0 56px;
+  padding: 24px 0 56px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
 }
 
 .mono-bar {
@@ -129,6 +163,11 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 12px 16px;
+  padding: 12px 14px;
+  border-radius: var(--m-radius-lg);
+  background: var(--m-surface);
+  border: 1px solid var(--m-border);
+  box-shadow: var(--shadow-bar);
 }
 
 .mono-bar-group {
@@ -153,48 +192,61 @@
   gap: 6px;
   min-height: 36px;
   min-width: 36px;
-  padding: 0 12px;
+  padding: 0 14px;
   border-radius: 999px;
   border: 1px solid var(--m-border-strong);
-  background: var(--m-surface);
+  background: var(--m-elevated);
   color: var(--m-text);
   font-size: 13px;
   font-weight: 500;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    0 2px 6px rgba(0, 0, 0, 0.35);
   transition:
-    transform 120ms var(--m-ease),
-    background 120ms var(--m-ease),
-    border-color 120ms var(--m-ease),
-    color 120ms var(--m-ease);
+    transform 120ms var(--m-spring),
+    background 140ms var(--m-ease),
+    border-color 140ms var(--m-ease),
+    color 140ms var(--m-ease),
+    box-shadow 140ms var(--m-ease);
 }
 
 .mono-btn:hover {
-  background: var(--m-elevated);
+  background: var(--m-raised);
+  border-color: var(--m-border-hi);
 }
 
 .mono-btn:active {
   transform: scale(0.97);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset,
+    0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 .mono-btn.is-primary {
   background: var(--m-ink);
-  border-color: var(--m-ink);
-  color: #fff;
+  border-color: rgba(232, 228, 220, 0.35);
+  color: var(--m-ink-deep);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.2) inset,
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 24px rgba(232, 228, 220, 0.08);
 }
 
 .mono-btn.is-primary:hover {
-  background: #262626;
+  background: #f2efe8;
 }
 
 .mono-btn.is-active {
   background: var(--m-ink);
-  border-color: var(--m-ink);
-  color: #fff;
+  border-color: rgba(232, 228, 220, 0.35);
+  color: var(--m-ink-deep);
 }
 
 .mono-btn.is-ghost {
   border-color: transparent;
   background: transparent;
   color: var(--m-muted);
+  box-shadow: none;
 }
 
 .mono-btn.is-ghost:hover {
@@ -210,18 +262,26 @@
   height: 32px;
   border-radius: var(--m-radius-sm);
   border: 1px solid transparent;
-  color: var(--m-muted);
-  transition: background 120ms var(--m-ease), color 120ms var(--m-ease);
+  color: var(--m-faint);
+  transition:
+    background 120ms var(--m-ease),
+    color 120ms var(--m-ease),
+    border-color 120ms var(--m-ease),
+    box-shadow 120ms var(--m-ease);
 }
 
 .mono-icon-btn:hover {
-  background: var(--m-ink-soft);
+  background: var(--m-elevated);
   color: var(--m-text);
+  border-color: var(--m-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 }
 
 .mono-icon-btn.is-on {
   background: var(--m-ink);
-  color: #fff;
+  color: var(--m-ink-deep);
+  border-color: transparent;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
 }
 
 .mono-field {
@@ -233,7 +293,7 @@
 .mono-label {
   font-family: var(--m-mono);
   font-size: 10px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--m-faint);
 }
@@ -244,21 +304,30 @@
   padding: 0 10px;
   border-radius: var(--m-radius-sm);
   border: 1px solid var(--m-border-strong);
-  background: var(--m-surface);
+  background: var(--m-elevated);
   font-size: 12px;
   color: var(--m-text);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset,
+    0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 .mono-select {
   appearance: none;
   padding-right: 24px;
-  background-image: linear-gradient(45deg, transparent 50%, var(--m-muted) 50%),
-    linear-gradient(135deg, var(--m-muted) 50%, transparent 50%);
+  background-image: linear-gradient(45deg, transparent 50%, var(--m-faint) 50%),
+    linear-gradient(135deg, var(--m-faint) 50%, transparent 50%);
   background-position:
     calc(100% - 12px) 13px,
     calc(100% - 7px) 13px;
   background-size: 5px 5px;
   background-repeat: no-repeat;
+  background-color: var(--m-elevated);
+}
+
+.mono-select:hover,
+.mono-input:hover {
+  border-color: var(--m-border-hi);
 }
 
 .mono-range {
@@ -276,30 +345,33 @@
 .mono-step-read {
   font-family: var(--m-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 500;
   letter-spacing: -0.04em;
-  color: var(--m-text);
+  color: var(--m-ink);
   line-height: 1;
   text-align: right;
+  text-shadow: 0 0 24px rgba(232, 228, 220, 0.15);
 }
 
 .mono-step-read small {
   display: block;
-  margin-top: 2px;
+  margin-top: 3px;
   font-size: 10px;
   font-weight: 400;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--m-faint);
+  text-shadow: none;
 }
 
 /* Sequencer panel */
 .mono-panel {
   background: var(--m-surface);
   border: 1px solid var(--m-border);
-  border-radius: 16px;
-  padding: 16px;
+  border-radius: var(--m-radius-lg);
+  padding: 18px;
+  box-shadow: var(--shadow-panel);
 }
 
 .mono-panel-head {
@@ -308,35 +380,33 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .mono-panel-title {
   font-size: 15px;
   font-weight: 600;
   letter-spacing: -0.02em;
+  color: var(--m-text);
 }
 
 .mono-panel-meta {
   font-size: 12px;
-  color: var(--m-muted);
+  color: var(--m-faint);
+  margin-top: 3px;
 }
 
 .mono-seq-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   margin: 0 -4px;
-  padding: 0 4px;
+  padding: 4px;
 }
 
 .mono-seq-grid {
   display: grid;
   gap: 6px;
   min-width: min-content;
-}
-
-.mono-seq-head {
-  display: contents;
 }
 
 .mono-seq-hcell {
@@ -354,7 +424,7 @@
 }
 
 .mono-seq-hcell.is-play {
-  color: var(--m-text);
+  color: var(--m-ink);
   font-weight: 600;
 }
 
@@ -364,8 +434,14 @@
   justify-content: center;
   gap: 6px;
   min-width: 220px;
-  padding-right: 8px;
+  padding: 6px 10px 6px 4px;
   border-right: 1px solid var(--m-border);
+  border-radius: var(--m-radius-sm) 0 0 var(--m-radius-sm);
+  transition: background 140ms var(--m-ease);
+}
+
+.mono-track-meta:hover {
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .mono-track-top {
@@ -385,12 +461,14 @@
   border-radius: var(--m-radius-sm);
   padding: 2px 6px;
   min-height: 28px;
+  color: var(--m-text);
 }
 
 .mono-track-name:hover,
 .mono-track-name:focus {
   border-color: var(--m-border-strong);
   background: var(--m-elevated);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .mono-track-controls {
@@ -412,35 +490,45 @@
   width: 28px;
   height: 28px;
   min-width: 28px;
-  border-radius: 6px;
+  border-radius: 7px;
   border: 1px solid var(--m-border-strong);
   background: var(--m-elevated);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset,
+    0 1px 3px rgba(0, 0, 0, 0.35);
   transition:
     background 100ms var(--m-ease),
     border-color 100ms var(--m-ease),
-    transform 100ms var(--m-ease),
+    transform 100ms var(--m-spring),
     box-shadow 100ms var(--m-ease);
 }
 
 .mono-cell:hover {
-  border-color: var(--m-muted);
+  border-color: var(--m-border-hi);
+  background: var(--m-raised);
 }
 
 .mono-cell:active {
-  transform: scale(0.94);
+  transform: scale(0.93);
 }
 
 .mono-cell.is-on {
-  background: var(--m-ink);
-  border-color: var(--m-ink);
+  background: linear-gradient(180deg, #f0ece4 0%, var(--m-ink) 100%);
+  border-color: rgba(232, 228, 220, 0.35);
+  box-shadow: var(--shadow-cell-on);
 }
 
 .mono-cell.is-playhead {
-  box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.2);
+  box-shadow:
+    0 0 0 2px rgba(232, 228, 220, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .mono-cell.is-on.is-playhead {
-  box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.35);
+  box-shadow:
+    0 0 0 2px rgba(232, 228, 220, 0.55),
+    0 2px 10px rgba(0, 0, 0, 0.45),
+    0 0 22px rgba(232, 228, 220, 0.16);
 }
 
 /* Lower */
@@ -467,29 +555,41 @@
   align-items: flex-start;
   justify-content: flex-end;
   gap: 4px;
-  min-height: 72px;
+  min-height: 76px;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid var(--m-border);
   background: var(--m-elevated);
   text-align: left;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    0 4px 14px rgba(0, 0, 0, 0.35);
   transition:
-    transform 120ms var(--m-ease),
-    background 120ms var(--m-ease),
-    border-color 120ms var(--m-ease);
+    transform 120ms var(--m-spring),
+    background 140ms var(--m-ease),
+    border-color 140ms var(--m-ease),
+    box-shadow 140ms var(--m-ease),
+    color 140ms var(--m-ease);
 }
 
 .mono-pad:hover {
-  border-color: var(--m-border-strong);
-  background: #ececeb;
+  border-color: var(--m-border-hi);
+  background: var(--m-raised);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
 .mono-pad:active,
 .mono-pad.is-hit {
   transform: scale(0.97);
   background: var(--m-ink);
-  border-color: var(--m-ink);
-  color: #fff;
+  border-color: rgba(232, 228, 220, 0.35);
+  color: var(--m-ink-deep);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.15) inset,
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(232, 228, 220, 0.1);
 }
 
 .mono-pad-name {
@@ -517,20 +617,29 @@
   padding: 0 12px;
   border-radius: 999px;
   border: 1px solid var(--m-border-strong);
-  background: var(--m-surface);
+  background: var(--m-elevated);
   font-size: 12px;
   color: var(--m-muted);
-  transition: background 120ms var(--m-ease), color 120ms var(--m-ease), border-color 120ms var(--m-ease);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition:
+    background 120ms var(--m-ease),
+    color 120ms var(--m-ease),
+    border-color 120ms var(--m-ease),
+    box-shadow 120ms var(--m-ease);
 }
 
 .mono-chip:hover {
   color: var(--m-text);
+  border-color: var(--m-border-hi);
 }
 
 .mono-chip.is-on {
   background: var(--m-ink);
-  border-color: var(--m-ink);
-  color: #fff;
+  border-color: rgba(232, 228, 220, 0.3);
+  color: var(--m-ink-deep);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.12) inset,
+    0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .mono-footer {
@@ -558,7 +667,8 @@
   z-index: 50;
   display: flex;
   justify-content: flex-end;
-  background: rgba(17, 17, 17, 0.2);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
 }
 
 .mono-drawer {
@@ -566,14 +676,15 @@
   height: 100%;
   background: var(--m-surface);
   border-left: 1px solid var(--m-border);
+  box-shadow: var(--shadow-float);
   display: flex;
   flex-direction: column;
-  animation: mono-slide 200ms var(--m-ease) both;
+  animation: mono-slide 220ms var(--m-ease) both;
 }
 
 @keyframes mono-slide {
   from {
-    transform: translateX(12px);
+    transform: translateX(16px);
     opacity: 0;
   }
   to {
@@ -589,6 +700,7 @@
   gap: 12px;
   padding: 16px 18px;
   border-bottom: 1px solid var(--m-border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
 }
 
 .mono-drawer-head h2 {
@@ -628,8 +740,11 @@
   border-radius: 50%;
   border: 1px solid var(--m-border-strong);
   background:
-    conic-gradient(from 210deg, var(--m-ink) var(--knob-angle, 0deg), var(--m-elevated) 0);
-  box-shadow: inset 0 0 0 7px var(--m-surface);
+    conic-gradient(from 210deg, var(--m-ink) var(--knob-angle, 0deg), var(--m-raised) 0);
+  box-shadow:
+    inset 0 0 0 7px var(--m-surface),
+    0 4px 12px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
   cursor: ns-resize;
 }
 
@@ -645,11 +760,12 @@
   transform-origin: bottom center;
   transform: rotate(var(--knob-rot, -120deg));
   border-radius: 1px;
+  box-shadow: 0 0 6px rgba(232, 228, 220, 0.35);
 }
 
 .mono-knob-name {
   font-size: 10px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--m-faint);
   font-family: var(--m-mono);
@@ -676,17 +792,17 @@
   display: grid;
   place-items: center;
   padding: 20px;
-  background: rgba(250, 250, 249, 0.72);
-  backdrop-filter: blur(8px);
+  background: rgba(5, 5, 6, 0.72);
+  backdrop-filter: blur(10px);
 }
 
 .mono-gate-card {
   width: min(360px, 100%);
   padding: 28px 24px;
-  border-radius: 16px;
-  border: 1px solid var(--m-border);
+  border-radius: 18px;
+  border: 1px solid var(--m-border-strong);
   background: var(--m-surface);
-  box-shadow: 0 24px 60px rgba(17, 17, 17, 0.08);
+  box-shadow: var(--shadow-float);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -705,10 +821,12 @@
   line-height: 1.55;
 }
 
-/* Docs */
+/* Docs — same dark system, quieter */
 .docs-mono {
   min-height: 100dvh;
-  background: var(--m-bg);
+  background:
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(255, 255, 255, 0.03), transparent 50%),
+    var(--m-bg);
   color: var(--m-text);
   font-family: var(--m-font);
 }
@@ -783,16 +901,17 @@
 }
 
 .docs-mono-main a {
-  color: var(--m-text);
+  color: var(--m-ink);
 }
 
 .docs-mono-main pre {
   margin: 0 0 16px;
   padding: 14px;
   overflow: auto;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid var(--m-border);
   background: var(--m-surface);
+  box-shadow: var(--shadow-bar);
   font-family: var(--m-mono);
   font-size: 12px;
   line-height: 1.5;
@@ -809,16 +928,22 @@
 .docs-mono-card {
   display: block;
   padding: 16px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid var(--m-border);
   background: var(--m-surface);
+  box-shadow: var(--shadow-bar);
   text-decoration: none;
   color: inherit;
-  transition: border-color 120ms var(--m-ease);
+  transition:
+    border-color 140ms var(--m-ease),
+    box-shadow 140ms var(--m-ease),
+    transform 140ms var(--m-ease);
 }
 
 .docs-mono-card:hover {
-  border-color: var(--m-border-strong);
+  border-color: var(--m-border-hi);
+  box-shadow: var(--shadow-panel);
+  transform: translateY(-1px);
 }
 
 .docs-mono-card h3 {
