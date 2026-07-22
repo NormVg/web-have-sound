@@ -147,6 +147,18 @@ registerSound('laser', ({ ctx, time, params, volume, connect }) => {
 
 playUISound('laser', 'alien');
 \`\`\`
+
+## Error Handling Philosophy
+This library is designed for UI augmentation and strictly prioritizes application stability. It follows a "graceful degradation" model.
+
+- **Silent Failures:** The library uses extensive \`try/catch\` blocks internally. If the browser blocks audio (e.g., due to autoplay policies), or if a sound fails to synthesize, the error is caught and swallowed. This guarantees that calling \`playUISound()\` will **never** throw an exception that could crash your React/Vue application.
+- **Opt-in Debugging:** If you need to troubleshoot why sounds aren't playing (e.g., missing names, bad registrations, or autoplay blocks), enable debug mode:
+\`\`\`ts
+import { configureUISounds } from '@thenormvg/web-have-sounds';
+
+configureUISounds({ debug: true });
+\`\`\`
+This routes internal failures to \`console.warn\` so you can see them during development without crashing the app.
 `
 
 const copied = ref(false)
