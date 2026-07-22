@@ -1,2 +1,4 @@
-User-Agent: *
-Disallow:
+User-agent: *
+Allow: /
+
+Sitemap: https://web-have-sounds.taohq.org/sitemap.xml
