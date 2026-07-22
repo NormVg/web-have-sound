@@ -51,7 +51,7 @@ The library ships with several procedural synthesis algorithms called "Feels". T
 ## One-Shot Sounds
 Trigger these using \`playUISound(id)\` or the \`data-uisound="id"\` attribute.
 
-- \`click\`, \`pop\`, \`tick\`, \`drop\`, \`hover\`
+- \`click\`, \`pop\`, \`tick\`, \`drop\`, \`hover\`, \`thud\`
 - \`success\`, \`error\`, \`warning\`, \`notify\`
 - \`startup\`, \`connect\`, \`disconnect\`
 - \`toggle\`, \`press\`, \`release\`, \`select\`, \`deselect\`

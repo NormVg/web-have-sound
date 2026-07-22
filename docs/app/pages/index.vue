@@ -45,13 +45,14 @@ let unbindDomSounds: any = null
 
 // --- TOY SEQUENCER STATE ---
 const defaultGrid = [
-  [true, false, false, true, false, false, true, false, false, true, false, true, true, true, false, false],
+  [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
   [false, true, true, false, true, false, false, true, false, true, false, false, true, false, true, false],
   [true, false, false, true, false, true, false, true, false, true, false, true, false, true, false, false],
-  [false, true, false, true, true, false, true, false, true, true, true, true, true, false, true, false]
+  [false, true, false, true, true, false, true, false, true, true, true, true, true, false, true, false],
+  [false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false]
 ]
-const defaultTracks = ['drop', 'pop', 'tick', 'click']
-const defaultFeels = ['industrial', 'arcade', 'minimal', 'aero']
+const defaultTracks = ['thud', 'drop', 'pop', 'tick', 'click']
+const defaultFeels = ['industrial', 'arcade', 'minimal', 'aero', 'soft']
 
 interface SequencerLayer {
   id: number
@@ -63,12 +64,10 @@ interface SequencerLayer {
 let nextLayerId = 5
 
 const createDefaultLayers = (): SequencerLayer[] => {
-  const tracks = ['drop', 'pop', 'tick', 'click']
-  const feels = ['industrial', 'arcade', 'minimal', 'aero']
-  return tracks.map((sound, i) => ({
+  return defaultTracks.map((sound, i) => ({
     id: i + 1,
     sound,
-    feel: feels[i],
+    feel: defaultFeels[i],
     steps: [...defaultGrid[i]]
   }))
 }
@@ -208,7 +207,7 @@ watch(sequencerLayers, saveSequencerState, { deep: true })
 watch(bpm, saveSequencerState)
 
 const cycleTrackSound = (idx: number) => {
-  const allSounds = ['click', 'pop', 'hover', 'tick', 'success', 'error', 'drop', 'keystroke']
+  const allSounds = ['thud', 'click', 'pop', 'hover', 'tick', 'success', 'error', 'drop']
   const layer = sequencerLayers.value[idx]
   const next = allSounds[(allSounds.indexOf(layer.sound) + 1) % allSounds.length]
   layer.sound = next
