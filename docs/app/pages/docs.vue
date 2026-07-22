@@ -221,6 +221,73 @@ const playPreview = (id: string) => {
   playUISound(id as any, selectedFeel.value)
 }
 
+const codeInstall = `npm install @thenormvg/web-have-sounds`
+
+const codeQuickstart = `import { configureUISounds, playUISound } from '@thenormvg/web-have-sounds';
+
+// Initialize the global engine
+configureUISounds({
+  feel: 'aero', // Try 'arcade', 'industrial', 'glass'...
+  volume: 0.8,
+});
+
+// Trigger a sound
+playUISound('click');
+playUISound('error', 'industrial'); // Override the global feel for a specific event`
+
+const codeHtml = `// HTML syntax
+<button data-uisound="click" data-uisound-hover="hover">
+  Submit
+</button>`
+
+const codeVue = `import { onMounted, onUnmounted } from 'vue';
+import { bindUISounds } from '@thenormvg/web-have-sounds';
+
+export default {
+  setup() {
+    onMounted(() => {
+      const unbind = bindUISounds();
+      onUnmounted(unbind);
+    });
+  }
+}`
+
+const codeReact = `import { useEffect } from 'react';
+import { bindUISounds } from '@thenormvg/web-have-sounds';
+
+function App() {
+  useEffect(() => {
+    return bindUISounds();
+  }, []);
+  return <div>...</div>;
+}`
+
+const codeCustom = `import { registerSound, playUISound } from '@thenormvg/web-have-sounds';
+
+registerSound('my_laser', ({ ctx, time, params, volume, connect }) => {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  
+  // Use the global feel params
+  osc.type = params.oscType; 
+  osc.frequency.setValueAtTime(800 * params.pitchMult, time);
+  osc.frequency.exponentialRampToValueAtTime(100, time + 0.2);
+  
+  gain.gain.setValueAtTime(volume, time);
+  gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
+  
+  osc.connect(gain);
+  
+  // Must connect to the provided connect() callback to route 
+  // through the master bus and volume controls
+  connect(gain);
+  
+  osc.start(time);
+  osc.stop(time + 0.2);
+});
+
+playUISound('my_laser');`
+
 onMounted(() => {
   configureUISounds({
     feel: selectedFeel.value,
@@ -268,31 +335,19 @@ onMounted(() => {
     <!-- Main Content -->
       <main class="max-w-3xl w-full mx-auto px-8 py-16 md:py-24 font-sans">
         
-        <div class="prose prose-p:text-black/70 prose-p:text-[14px] prose-p:leading-relaxed prose-headings:text-black prose-a:text-[var(--color-liquid-lava)] hover:prose-a:text-[#ff8f40] prose-code:text-black prose-pre:bg-[#f5f5f5] prose-pre:border prose-pre:border-black/5 max-w-none">
-        
-        <section id="installation" class="mb-20">
-          <h2 class="text-xl font-semibold mb-4 tracking-tight">1. Installation</h2>
-          <p class="mb-4">The library is zero-dependency and uses the native Web Audio API to synthesize all sounds procedurally. There are no MP3/WAV files to load.</p>
-          <pre class="bg-[#f5f5f5] p-4 rounded border border-black/5 font-mono text-xs overflow-x-auto">npm install @thenormvg/web-have-sounds</pre>
-        </section>
-
-        <section id="quickstart" class="mb-20">
-          <h2 class="text-xl font-semibold mb-4 tracking-tight">2. Quick Start</h2>
-          <p class="mb-4">You can trigger sounds manually via code, or declaratively using HTML data attributes.</p>
-          <pre class="bg-[#f5f5f5] p-4 rounded border border-black/5 font-mono text-xs overflow-x-auto">
-import { configureUISounds, playUISound } from '@thenormvg/web-have-sounds';
-
-// Initialize the global engine
-configureUISounds({
-  feel: 'aero', // Try 'arcade', 'industrial', 'glass'...
-  volume: 0.8,
-});
-
-// Trigger a sound
-playUISound('click');
-playUISound('error', 'industrial'); // Override the global feel for a specific event
-          </pre>
-        </section>
+        <div class="prose prose-p:text-black/70 prose-p:text-[14px] prose-p:leading-relaxed prose-headings:text-black prose-a:text-[var(--color-liquid-lava)] hover:prose-a:text-[#ff8f40] prose-code:text-black max-w-none">
+          
+          <section id="installation" class="mb-20">
+            <h2 class="text-xl font-semibold mb-4 tracking-tight">1. Installation</h2>
+            <p class="mb-4">The library is zero-dependency and uses the native Web Audio API to synthesize all sounds procedurally. There are no MP3/WAV files to load.</p>
+            <CodeSnippet :code="codeInstall" />
+          </section>
+  
+          <section id="quickstart" class="mb-20">
+            <h2 class="text-xl font-semibold mb-4 tracking-tight">2. Quick Start</h2>
+            <p class="mb-4">You can trigger sounds manually via code, or declaratively using HTML data attributes.</p>
+            <CodeSnippet :code="codeQuickstart" />
+          </section>
 
         <section id="feels" class="mb-20">
           <h2 class="text-xl font-semibold mb-4 tracking-tight">3. Feels Catalog</h2>
@@ -373,44 +428,17 @@ playUISound('error', 'industrial'); // Override the global feel for a specific e
           <h2 class="text-xl font-semibold mb-4 tracking-tight">6. Framework Integration</h2>
           <p class="mb-4">The easiest way to use the library is with declarative HTML attributes. Run <code class="bg-black/5 px-1.5 py-0.5 rounded text-black border border-black/10">bindUISounds()</code> when your app mounts.</p>
           
-          <pre class="bg-[#f5f5f5] p-4 rounded border border-black/5 font-mono text-xs overflow-x-auto mb-6">
-// HTML syntax
-&lt;button data-uisound="click" data-uisound-hover="hover"&gt;
-  Submit
-&lt;/button&gt;
-          </pre>
+          <CodeSnippet :code="codeHtml" />
 
           <div class="flex flex-col gap-6">
             <div>
               <h3 class="text-xs font-semibold text-black/50 mb-2 uppercase tracking-wider">Vue / Nuxt</h3>
-              <pre class="bg-[#f5f5f5] p-4 rounded border border-black/5 font-mono text-[10px] overflow-x-auto h-full">
-import { onMounted, onUnmounted } from 'vue';
-import { bindUISounds } from '@thenormvg/web-have-sounds';
-
-export default {
-  setup() {
-    onMounted(() => {
-      const unbind = bindUISounds();
-      onUnmounted(unbind);
-    });
-  }
-}
-              </pre>
+              <CodeSnippet :code="codeVue" />
             </div>
             
             <div>
               <h3 class="text-xs font-semibold text-black/50 mb-2 uppercase tracking-wider">React / Next.js</h3>
-              <pre class="bg-[#f5f5f5] p-4 rounded border border-black/5 font-mono text-[10px] overflow-x-auto h-full">
-import { useEffect } from 'react';
-import { bindUISounds } from '@thenormvg/web-have-sounds';
-
-function App() {
-  useEffect(() => {
-    return bindUISounds();
-  }, []);
-  return &lt;div&gt;...&lt;/div&gt;;
-}
-              </pre>
+              <CodeSnippet :code="codeReact" />
             </div>
           </div>
         </section>
@@ -419,33 +447,7 @@ function App() {
           <h2 class="text-xl font-semibold mb-4 tracking-tight">7. Custom API</h2>
           <p class="mb-6">For advanced users, you can write your own Web Audio API nodes and register them as sounds or feels into the catalog.</p>
           
-          <pre class="bg-[#f5f5f5] p-4 rounded border border-black/5 font-mono text-xs overflow-x-auto">
-import { registerSound, playUISound } from '@thenormvg/web-have-sounds';
-
-registerSound('my_laser', ({ ctx, time, params, volume, connect }) => {
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  
-  // Use the global feel params
-  osc.type = params.oscType; 
-  osc.frequency.setValueAtTime(800 * params.pitchMult, time);
-  osc.frequency.exponentialRampToValueAtTime(100, time + 0.2);
-  
-  gain.gain.setValueAtTime(volume, time);
-  gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
-  
-  osc.connect(gain);
-  
-  // Must connect to the provided connect() callback to route 
-  // through the master bus and volume controls
-  connect(gain);
-  
-  osc.start(time);
-  osc.stop(time + 0.2);
-});
-
-playUISound('my_laser');
-          </pre>
+          <CodeSnippet :code="codeCustom" />
         </section>
 
       </div>
