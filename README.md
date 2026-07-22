@@ -69,6 +69,17 @@ const result = playUISound('click');
 // { ok: true } | { ok: false, reason: 'muted' | 'ssr' | 'throttled' | 'unknown' | 'no-audio' | 'error' }
 ```
 
+### Error Handling Philosophy
+
+This library strictly prioritizes application stability and follows a **graceful degradation** model:
+
+- **Silent Failures:** The core engine extensively uses `try/catch` blocks internally. If a browser blocks audio due to strict autoplay policies, or a sound fails to play because of missing hardware, the error is caught and swallowed. This ensures that a failed UI sound will **never** throw an exception that could crash your React/Vue component tree.
+- **Opt-in Debugging:** If you need to debug why sounds are not playing (e.g. tracking down missing names or autoplay blocks), initialize the library with debug mode:
+  ```ts
+  configureUISounds({ debug: true });
+  ```
+  This will route all internal, non-fatal errors to `console.warn` so you can view them during development.
+
 ---
 
 ## Architecture (how to think about it)
@@ -116,7 +127,7 @@ One shared `AudioContext` is created lazily. Override per call with `{ ctx }` or
 
 | Type | Use |
 |------|-----|
-| `click` `pop` `toggle` | General UI |
+| `click` `pop` `toggle` `thud` | General UI |
 | `press` / `release` | Pointer down / up |
 | `hover` | Pointer enter (throttled 150ms) |
 | `tick` | Steppers (throttled) |
