@@ -1,0 +1,14 @@
+# web-have-sounds
+
+A zero-dependency, procedural audio engine for the web. Synthesize tactile UI sounds and ambient loops in real-time using the Web Audio API.
+
+## Resources
+- Full documentation: https://web-have-sounds.taohq.org/llms-full.txt
+- GitHub Repo: https://github.com/NormVg/web-have-sound
+- NPM Package: https://www.npmjs.com/package/@thenormvg/web-have-sounds
+
+## Installation
+NPM: `npm install @thenormvg/web-have-sounds`
+Agent Skill: `npx skills add normvg/web-have-sound --skill web-have-sounds`
+
+Made with love by TheAlphaOnes.
