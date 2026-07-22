@@ -29,7 +29,7 @@ export function bindUISoundsDom(
     }
 
     const root: ParentNode = options.root ?? document;
-    const capture = options.capture ?? false;
+    const capture = options.capture ?? true; // Must be true to catch non-bubbling pointerenter/focus
     const events = [
         "click",
         "pointerenter",

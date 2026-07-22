@@ -1,10 +1,14 @@
 {
   "name": "@thenormvg/web-have-sounds",
-  "version": "1.5.0",
+  "version": "1.6.2",
   "description": "Procedurally generated, zero-dependency UI sounds using the native Web Audio API.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NormVg/web-have-sound.git"
@@ -17,9 +21,6 @@
     "build": "tsup src/index.ts --format cjs,esm --dts",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
     "test": "npm run build && node --test test/*.test.mjs",
-    "docs:dev": "npm run build && npm run dev --prefix docs",
-    "docs:build": "npm run build && npm run build --prefix docs",
-    "docs:generate": "npm run build && npm run generate --prefix docs",
     "prepublishOnly": "npm run build"
   },
   "keywords": [

@@ -1,53 +1,75 @@
-# web-have-sounds docs + playground
+# Nuxt Minimal Starter
 
-Nuxt 4 site for library documentation and an interactive playground.
+Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
-## Develop
+## Setup
 
-From the **repo root**:
-
-```bash
-npm run docs:dev
-```
-
-Or from this folder:
+Make sure to install dependencies:
 
 ```bash
+# npm
 npm install
+
+# pnpm
+pnpm install
+
+# yarn
+yarn install
+
+# bun
+bun install
+```
+
+## Development Server
+
+Start the development server on `http://localhost:3000`:
+
+```bash
+# npm
 npm run dev
+
+# pnpm
+pnpm dev
+
+# yarn
+yarn dev
+
+# bun
+bun run dev
 ```
 
-Open http://localhost:3000
+## Production
 
-## Structure
+Build the application for production:
 
-```
-docs/
-  app/
-    assets/css/base.css     # temporary shell styles
-    components/             # (empty — design later)
-    composables/useSounds.ts
-    layouts/default.vue
-    layouts/docs.vue
-    pages/
-      index.vue             # home
-      playground/           # live lab
-      docs/                 # documentation pages
-    plugins/sounds.client.ts
-  nuxt.config.ts            # aliases monorepo library source
+```bash
+# npm
+npm run build
+
+# pnpm
+pnpm build
+
+# yarn
+yarn build
+
+# bun
+bun run build
 ```
 
-The library is resolved from `../src/index.ts` so playground changes pick up local package edits without publishing.
+Locally preview production build:
 
-## Scripts
+```bash
+# npm
+npm run preview
 
-| Command | What |
-|---------|------|
-| `npm run dev` | Nuxt dev server |
-| `npm run build` | Production build |
-| `npm run generate` | Static generate |
-| `npm run preview` | Preview production build |
+# pnpm
+pnpm preview
 
-## Design
+# yarn
+yarn preview
 
-Visual system / content polish intentionally deferred. Tell the agent what you want next.
+# bun
+bun run preview
+```
+
+Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
