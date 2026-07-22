@@ -345,6 +345,14 @@ Default package functions use a shared singleton — fine for most apps.
 
 ---
 
+## Credits
+
+A product by **[TheAlphaOnes](https://taohq.org)**.
+- Follow **[@TheNormVg on X (Twitter)](https://x.com/TheNormVg)**
+- Follow **[@NormVg on GitHub](https://github.com/NormVg)**
+
+---
+
 ## License
 
 MIT

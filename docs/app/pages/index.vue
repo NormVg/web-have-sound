@@ -840,13 +840,21 @@ btn.addEventListener(<span class="text-[var(--color-liquid-lava)]">'click'</span
             </div>
           </div>
           
-          <div class="mt-12 pt-6 border-t border-black/10 flex justify-between items-end">
-            <div class="text-[10px] uppercase tracking-widest opacity-50">
-              Web Audio API<br>Engine v1.6.2
-            </div>
-            <!-- Hardware mic decoration -->
-            <div class="w-20 h-5 flex gap-[3px]">
-              <div v-for="i in 10" :key="i" class="flex-1 bg-black/20 rounded-full"></div>
+          <div class="mt-12 pt-6 border-t border-black/10">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
+              <div class="text-[10px] uppercase tracking-widest text-black/50 space-y-4">
+                <div>Web Audio API<br>Engine v1.6.4</div>
+                <div class="flex gap-4 font-bold">
+                  <a href="https://x.com/TheNormVg" target="_blank" class="hover:text-[var(--color-liquid-lava)] transition-colors" data-uisound="hover">X / Twitter</a>
+                  <a href="https://github.com/NormVg" target="_blank" class="hover:text-[var(--color-liquid-lava)] transition-colors" data-uisound="hover">GitHub</a>
+                  <a href="https://taohq.org" target="_blank" class="hover:text-[var(--color-liquid-lava)] transition-colors" data-uisound="hover" title="A product by TheAlphaOnes">TheAlphaOnes</a>
+                </div>
+              </div>
+              
+              <!-- Hardware mic decoration -->
+              <div class="w-20 h-5 flex gap-[3px]">
+                <div v-for="i in 10" :key="i" class="flex-1 bg-black/20 rounded-full"></div>
+              </div>
             </div>
           </div>
         </div>

@@ -802,6 +802,21 @@ onUnmounted(() => {
 
       </div>
       </main>
+      
+      <!-- Footer -->
+      <footer class="max-w-3xl w-full mx-auto px-5 sm:px-8 py-12 border-t border-black/10 mt-20 text-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-6 text-black/50 font-sans">
+          <div class="flex gap-6 font-medium">
+            <a href="https://x.com/TheNormVg" target="_blank" class="hover:text-[var(--color-liquid-lava)] transition-colors">X / Twitter</a>
+            <a href="https://github.com/NormVg" target="_blank" class="hover:text-[var(--color-liquid-lava)] transition-colors">GitHub</a>
+            <a href="https://taohq.org" target="_blank" class="hover:text-[var(--color-liquid-lava)] transition-colors" title="A product by TheAlphaOnes">TheAlphaOnes</a>
+          </div>
+          <div class="text-xs uppercase tracking-widest font-mono opacity-60">
+            v1.6.4 &copy; TheAlphaOnes
+          </div>
+        </div>
+      </footer>
+      
     </div>
   </div>
 </template>
