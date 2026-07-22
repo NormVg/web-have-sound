@@ -91,14 +91,26 @@ const loadSequencerState = () => {
     const saved = localStorage.getItem('te-sequencer-state')
     if (saved) {
       const data = JSON.parse(saved)
-      if (data.layers && Array.isArray(data.layers) && data.layers[0] && data.layers[0].steps) {
-        sequencerLayers.value = data.layers
-        nextLayerId = Math.max(...data.layers.map((l: any) => l.id), 0) + 1
+      if (data.layers && Array.isArray(data.layers)) {
+        // Merge saved layers into default layers so we don't lose new tracks
+        const defaults = createDefaultLayers()
+        data.layers.forEach((savedLayer: any, i: number) => {
+          if (defaults[i]) {
+            defaults[i].sound = savedLayer.sound || defaults[i].sound
+            defaults[i].feel = savedLayer.feel || defaults[i].feel
+            if (Array.isArray(savedLayer.steps) && savedLayer.steps.length === 16) {
+              defaults[i].steps = savedLayer.steps
+            }
+          }
+        })
+        sequencerLayers.value = defaults
       }
       if (data.bpm) bpm.value = data.bpm
       return
     }
-  } catch (e) {}
+  } catch (e) {
+    console.error('Failed to load sequencer state:', e)
+  }
   
   resetSequencer(false)
 }

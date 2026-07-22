@@ -49,19 +49,19 @@
     border: none;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow:
-      0 6px 0 #111,
-      0 10px 15px rgba(0,0,0,0.5),
+      2px 6px 0 #111,
+      2px 10px 15px rgba(0,0,0,0.5),
       inset 0 1px 1px rgba(255,255,255,0.05);
-    transform: translateY(0) scale(1);
+    transform: translate(0, 0) scale(1);
     /* Snappy down, slightly softer up */
     transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.1s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.1s;
   }
   .chunky-key:active, .chunky-key.active-loop {
-    /* Translate down, scale down (pushing into Z-space) */
-    transform: translateY(4px) scale(0.97);
+    /* Translate diagonally down, scale down (pushing into Z-space) */
+    transform: translate(2px, 4px) scale(0.97);
     box-shadow:
-      0 2px 0 #111,
-      0 4px 6px rgba(0,0,0,0.6),
+      0px 2px 0 #111,
+      0px 4px 6px rgba(0,0,0,0.6),
       inset 0 3px 6px rgba(0,0,0,0.3); /* Inner shadow simulates finger occlusion */
     filter: brightness(0.9);
     transition: transform 0.03s ease, box-shadow 0.03s ease, filter 0.03s ease;
