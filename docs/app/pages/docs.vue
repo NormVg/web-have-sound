@@ -258,11 +258,32 @@ const drawOscilloscope = () => {
   const time = Date.now() / 1000
   const amp = oscData.value.amplitude
   const baseFreq = oscData.value.freq / 100
+  const sName = oscData.value.activeSound
   
   ctx.beginPath()
   ctx.moveTo(0, height / 2)
   for(let x = 0; x < width; x += 2) {
-    const y = Math.sin(x * 0.05 * baseFreq + time * 8) * (2 + 25 * amp)
+    let y = 0
+    if (sName === 'error' || sName === 'delete' || sName === 'remove') {
+      // Distorted / noisy
+      y = (Math.sin(x * 0.05 * baseFreq + time * 8) + Math.sin(x * 0.1 * baseFreq) * 0.5 + (Math.random() - 0.5) * 0.5) * (2 + 25 * amp)
+    } else if (sName === 'success' || sName === 'startup' || sName === 'connect') {
+      // FM / rising complexity
+      y = Math.sin(x * 0.05 * baseFreq + Math.sin(x * 0.01 + time * 4) * 2 + time * 8) * (2 + 25 * amp)
+    } else if (sName === 'hover' || sName === 'tick' || sName === 'click' || sName === 'keystroke') {
+      // Short transient (decays quickly left to right in the visualization)
+      const env = Math.max(0, 1 - x / (width * 0.3)) 
+      y = Math.sin(x * 0.1 * baseFreq + time * 12) * (2 + 25 * amp * env)
+    } else if (sName === 'pop' || sName === 'drop') {
+      // Bouncy / rounded
+      y = Math.abs(Math.sin(x * 0.04 * baseFreq + time * 8)) * (4 + 30 * amp) - (2 + 15 * amp)
+    } else if (sName === 'warning' || sName === 'disconnect') {
+      // Square-ish / aggressive
+      y = Math.sign(Math.sin(x * 0.05 * baseFreq + time * 8)) * (2 + 20 * amp)
+    } else {
+      // Default sine (notify, select, toggle, etc)
+      y = Math.sin(x * 0.05 * baseFreq + time * 8) * (2 + 25 * amp)
+    }
     ctx.lineTo(x, height / 2 + y)
   }
   ctx.strokeStyle = '#ff6b35'
