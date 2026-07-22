@@ -53,9 +53,27 @@ const defaultGrid = [
 const defaultTracks = ['drop', 'pop', 'tick', 'click']
 const defaultFeels = ['industrial', 'arcade', 'minimal', 'aero']
 
-const sequencerGrid = ref(Array.from({ length: 4 }, () => Array(16).fill(false)))
-const sequencerTracks = ref(['drop', 'pop', 'tick', 'click'])
-const sequencerFeels = ref(['industrial', 'arcade', 'minimal', 'aero'])
+interface SequencerLayer {
+  id: number
+  sound: string
+  feel: string
+  steps: boolean[]
+}
+
+let nextLayerId = 5
+
+const createDefaultLayers = (): SequencerLayer[] => {
+  const tracks = ['drop', 'pop', 'tick', 'click']
+  const feels = ['industrial', 'arcade', 'minimal', 'aero']
+  return tracks.map((sound, i) => ({
+    id: i + 1,
+    sound,
+    feel: feels[i],
+    steps: [...defaultGrid[i]]
+  }))
+}
+
+const sequencerLayers = ref<SequencerLayer[]>(createDefaultLayers())
 const currentStep = ref(0)
 const isPlaying = ref(false)
 const bpm = ref(120)
@@ -64,9 +82,7 @@ let sequencerInterval: any = null
 const saveSequencerState = () => {
   if (typeof window === 'undefined') return
   localStorage.setItem('te-sequencer-state', JSON.stringify({
-    grid: sequencerGrid.value,
-    tracks: sequencerTracks.value,
-    feels: sequencerFeels.value,
+    layers: sequencerLayers.value,
     bpm: bpm.value
   }))
 }
@@ -76,55 +92,132 @@ const loadSequencerState = () => {
     const saved = localStorage.getItem('te-sequencer-state')
     if (saved) {
       const data = JSON.parse(saved)
-      if (data.grid) sequencerGrid.value = data.grid
-      if (data.tracks) sequencerTracks.value = data.tracks
-      if (data.feels) sequencerFeels.value = data.feels
+      if (data.layers && Array.isArray(data.layers) && data.layers[0] && data.layers[0].steps) {
+        sequencerLayers.value = data.layers
+        nextLayerId = Math.max(...data.layers.map((l: any) => l.id), 0) + 1
+      }
       if (data.bpm) bpm.value = data.bpm
       return
     }
   } catch (e) {}
   
-  // Fallback to default beat
   resetSequencer(false)
 }
 
+// --- VISUALIZER STATE ---
+const oscCanvas = ref<HTMLCanvasElement | null>(null)
+const oscData = ref({ activeSound: 'chime', freq: 1047, time: 0.36, amplitude: 0 })
+let oscFrame: any = null
+
+const drawOscilloscope = () => {
+  if (!oscCanvas.value) return
+  const canvas = oscCanvas.value
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+  
+  const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1
+  const rect = canvas.getBoundingClientRect()
+  if (canvas.width !== rect.width * dpr || canvas.height !== rect.height * dpr) {
+    canvas.width = rect.width * dpr
+    canvas.height = rect.height * dpr
+    ctx.scale(dpr, dpr)
+  } else {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+  }
+
+  const width = rect.width
+  const height = rect.height
+
+  ctx.clearRect(0, 0, width, height)
+  
+  // Draw faint grid
+  ctx.strokeStyle = '#00000005'
+  ctx.lineWidth = 1
+  for(let x = 0; x < width; x += 15) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke(); }
+  for(let y = 0; y < height; y += 15) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke(); }
+
+  // Draw wave
+  const time = Date.now() / 1000
+  const amp = oscData.value.amplitude
+  const baseFreq = oscData.value.freq / 100
+  
+  ctx.beginPath()
+  ctx.moveTo(0, height / 2)
+  for(let x = 0; x < width; x += 2) {
+    const y = Math.sin(x * 0.05 * baseFreq + time * 8) * (2 + 25 * amp)
+    ctx.lineTo(x, height / 2 + y)
+  }
+  ctx.strokeStyle = '#ff6b35'
+  ctx.lineWidth = 2
+  ctx.shadowColor = 'rgba(255, 107, 53, 0.4)'
+  ctx.shadowBlur = 6
+  ctx.stroke()
+  
+  oscData.value.amplitude = Math.max(0, oscData.value.amplitude - 0.04)
+  oscData.value.time = Math.min(1.0, oscData.value.time + 0.01)
+  
+  oscFrame = requestAnimationFrame(drawOscilloscope)
+}
+
+const triggerOscilloscope = (soundName: string) => {
+  oscData.value.activeSound = soundName
+  oscData.value.freq = 400 + Math.floor(Math.random() * 800)
+  oscData.value.time = 0.0
+  oscData.value.amplitude = 1.0
+}
+
 const resetSequencer = (playSound = true) => {
-  sequencerGrid.value = JSON.parse(JSON.stringify(defaultGrid))
-  sequencerTracks.value = [...defaultTracks]
-  sequencerFeels.value = [...defaultFeels]
+  sequencerLayers.value = createDefaultLayers()
   bpm.value = 120
   if (playSound) playUISound('pop')
 }
 
 const clearSequencer = () => {
-  sequencerGrid.value = Array.from({ length: 4 }, () => Array(16).fill(false))
+  sequencerLayers.value.forEach(layer => {
+    layer.steps = Array(16).fill(false)
+  })
   playUISound('tick')
 }
 
-watch(sequencerGrid, saveSequencerState, { deep: true })
-watch([sequencerTracks, sequencerFeels, bpm], saveSequencerState, { deep: true })
+watch(sequencerLayers, saveSequencerState, { deep: true })
+watch(bpm, saveSequencerState)
 
 const cycleTrackSound = (idx: number) => {
   const allSounds = ['click', 'pop', 'hover', 'tick', 'success', 'error', 'drop', 'keystroke']
-  const next = allSounds[(allSounds.indexOf(sequencerTracks.value[idx]) + 1) % allSounds.length]
-  sequencerTracks.value[idx] = next
-  playUISound(next as any, sequencerFeels.value[idx] as any)
-  triggerVisualizer()
+  const layer = sequencerLayers.value[idx]
+  const next = allSounds[(allSounds.indexOf(layer.sound) + 1) % allSounds.length]
+  layer.sound = next
+  playUISound(next as any)
 }
 
 const cycleTrackFeel = (idx: number) => {
-  const next = availableFeels[(availableFeels.indexOf(sequencerFeels.value[idx]) + 1) % availableFeels.length]
-  sequencerFeels.value[idx] = next
-  playUISound(sequencerTracks.value[idx] as any, next as any)
-  triggerVisualizer()
+  const availableFeels = ['aero', 'arcade', 'industrial', 'glass', 'organic', 'retro', 'soft', 'crisp', 'minimal']
+  const layer = sequencerLayers.value[idx]
+  const next = availableFeels[(availableFeels.indexOf(layer.feel) + 1) % availableFeels.length]
+  layer.feel = next
+  playUISound(layer.sound as any)
 }
 
 const toggleStep = (trackIdx: number, stepIdx: number) => {
-  sequencerGrid.value[trackIdx][stepIdx] = !sequencerGrid.value[trackIdx][stepIdx]
-  if (sequencerGrid.value[trackIdx][stepIdx]) {
-    playUISound(sequencerTracks.value[trackIdx] as any, sequencerFeels.value[trackIdx] as any)
-    triggerVisualizer()
+  sequencerLayers.value[trackIdx].steps[stepIdx] = !sequencerLayers.value[trackIdx].steps[stepIdx]
+  if (sequencerLayers.value[trackIdx].steps[stepIdx]) {
+    playUISound(sequencerLayers.value[trackIdx].sound as any)
   }
+}
+
+const addLayer = () => {
+  sequencerLayers.value.push({
+    id: nextLayerId++,
+    sound: 'click',
+    feel: 'aero',
+    steps: Array(16).fill(false)
+  })
+  playUISound('pop')
+}
+
+const removeLayer = (idx: number) => {
+  sequencerLayers.value.splice(idx, 1)
+  playUISound('tick')
 }
 
 const runSequencer = () => {
@@ -135,13 +228,13 @@ const runSequencer = () => {
   sequencerInterval = setInterval(() => {
     // Play sounds for current step
     let played = false
-    for (let track = 0; track < 4; track++) {
-      if (sequencerGrid.value[track][currentStep.value]) {
-        playUISound(sequencerTracks.value[track] as any, sequencerFeels.value[track] as any)
+    sequencerLayers.value.forEach((layer) => {
+      if (layer.steps[currentStep.value]) {
+        triggerOscilloscope(layer.sound)
+        playUISound(layer.sound as any)
         played = true
       }
-    }
-    if (played) triggerVisualizer()
+    })
     
     // Advance step
     currentStep.value = (currentStep.value + 1) % 16
@@ -175,6 +268,7 @@ onMounted(() => {
   })
   
   loadSequencerState()
+  drawOscilloscope()
   
   // Bind declarative data-uisound attributes
   unbindDomSounds = bindUISounds()
@@ -202,6 +296,7 @@ onUnmounted(() => {
     }
   })
   if (decayInterval) clearInterval(decayInterval)
+  if (oscFrame) cancelAnimationFrame(oscFrame)
   if (unbindDomSounds) unbindDomSounds()
   if (sequencerInterval) clearInterval(sequencerInterval)
 })
@@ -439,15 +534,30 @@ const copyCode = async () => {
       <div class="flex-1 w-full bg-[var(--color-snow)] text-[var(--color-dark-void)] border-t border-black overflow-hidden relative">
         <div class="p-6 pt-8 pb-20 relative">
           
-          <!-- Hardware Speaker Grill -->
-          <div class="w-full h-6 rounded-full bg-black/5 border border-black/10 shadow-[inset_0_2px_5px_rgba(0,0,0,0.1)] mb-10 overflow-hidden flex items-center justify-center">
-            <div class="w-full h-full opacity-40" style="background-image: radial-gradient(circle, #000 1px, transparent 1px); background-size: 3px 3px; background-position: center;"></div>
+          <!-- SPEAKER MESH GRILL -->
+          <div class="w-full max-w-sm mx-auto h-4 rounded-full mb-8" 
+               style="background-image: radial-gradient(#000 15%, transparent 16%); background-size: 4px 4px; background-position: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);">
           </div>
           
-          <!-- TOY SEQUENCER (16-Step) -->
-          <div class="mb-14 bg-[var(--color-dark-void)] text-[var(--color-te-silver)] p-6 rounded-[4px] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5),0_4px_12px_rgba(0,0,0,0.1)] border border-black relative">
+          <!-- HARDWARE CHASSIS -->
+          <div class="w-full flex flex-col gap-1 max-w-3xl mx-auto mb-10">
             
-            <!-- Controls -->
+            <!-- Oscilloscope Screen (Top Half) -->
+            <div class="bg-white rounded-t-xl rounded-b-[4px] p-5 relative overflow-hidden border border-black/10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col">
+              <div class="flex justify-between items-baseline mb-2 relative z-10">
+                <div class="flex items-baseline gap-3">
+                  <span class="text-[13px] font-bold text-black/90">Sound palette</span> 
+                  <span class="text-[10px] text-black/40 font-mono">oscilloscope output</span>
+                </div>
+                <div class="text-[10px] font-mono text-black/40 bg-black/5 px-2 py-0.5 rounded-sm">{{ oscData.activeSound }} &nbsp;{{ oscData.freq }} Hz &middot; {{ oscData.time.toFixed(2) }} s</div>
+              </div>
+              <canvas ref="oscCanvas" class="w-full h-[40px] relative z-0"></canvas>
+            </div>
+            
+            <!-- TOY SEQUENCER MODULE (Bottom Half) -->
+            <div class="bg-[var(--color-dark-void)] rounded-t-[4px] rounded-b-xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.25)] border border-black/10">
+            
+            <!-- Transport Controls -->
             <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
               <div class="flex items-center gap-4">
                 <button 
@@ -475,39 +585,45 @@ const copyCode = async () => {
             <div class="flex gap-3">
               
               <!-- Track Controls Column -->
-              <div class="flex flex-col gap-2 w-[48px] flex-shrink-0">
-                <div v-for="(track, tIndex) in 4" :key="'control-'+tIndex" class="h-10 flex flex-col justify-center gap-0.5">
-                  <button @click="cycleTrackSound(tIndex)" class="text-[9px] font-bold text-white text-left uppercase truncate hover:text-[var(--color-liquid-lava)] transition-colors active:scale-95 origin-left tracking-widest cursor-crosshair">{{ sequencerTracks[tIndex] }}</button>
-                  <button @click="cycleTrackFeel(tIndex)" class="text-[8px] font-mono text-white/40 text-left uppercase truncate hover:text-[var(--color-liquid-lava)] transition-colors active:scale-95 origin-left cursor-crosshair">{{ sequencerFeels[tIndex] }}</button>
+              <div class="flex flex-col gap-2 w-[48px] flex-shrink-0 pt-[2px]">
+                <div v-for="(layer, tIndex) in sequencerLayers" :key="'control-'+layer.id" class="h-10 flex flex-col justify-center gap-0.5 relative group">
+                  <button @click="cycleTrackSound(tIndex)" class="text-[9px] font-bold text-white text-left uppercase truncate hover:text-[var(--color-liquid-lava)] transition-colors active:scale-95 origin-left tracking-widest cursor-crosshair">{{ layer.sound }}</button>
+                  <button @click="cycleTrackFeel(tIndex)" class="text-[8px] font-mono text-white/40 text-left uppercase truncate hover:text-[var(--color-liquid-lava)] transition-colors active:scale-95 origin-left cursor-crosshair">{{ layer.feel }}</button>
+                  <button @click="removeLayer(tIndex)" class="absolute -left-[22px] top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-white/40 hover:text-white hover:bg-red-500 w-5 h-5 rounded-full flex items-center justify-center transition-all cursor-crosshair hover:scale-110" aria-label="Remove layer">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                  </button>
                 </div>
               </div>
 
               <!-- Grid -->
-              <div class="flex flex-col gap-2 flex-1 w-full overflow-hidden">
-                <div v-for="(track, tIndex) in 4" :key="'track-'+tIndex" class="flex gap-[2px] h-10 w-full">
+              <TransitionGroup name="layer-list" tag="div" class="flex flex-col gap-2 flex-1 w-full overflow-hidden">
+                <div v-for="(layer, tIndex) in sequencerLayers" :key="'track-'+layer.id" class="flex gap-[2px] h-10 w-full layer-item">
                   <div 
                     v-for="step in 16" 
                     :key="'step-'+step"
                     @pointerdown="toggleStep(tIndex, step - 1)"
                     class="flex-1 rounded-[2px] cursor-crosshair transition-all duration-75 relative"
                     :class="[
-                      sequencerGrid[tIndex][step - 1] ? 'bg-[var(--color-liquid-lava)] shadow-[0_0_8px_rgba(255,107,53,0.5)] border border-[#ff8855]' : 'bg-[#1a1a1a] hover:bg-[#2a2a2a] shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] border border-black/50',
+                      layer.steps[step - 1] ? 'bg-[var(--color-liquid-lava)] shadow-[0_0_8px_rgba(255,107,53,0.5)] border border-[#ff8855]' : 'bg-[#1a1a1a] hover:bg-[#2a2a2a] shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] border border-black/50',
                       currentStep === step - 1 && isPlaying ? 'after:absolute after:inset-0 after:bg-white/30 after:rounded-[2px] after:shadow-[0_0_10px_rgba(255,255,255,0.5)]' : ''
                     ]"
                   ></div>
                 </div>
-              </div>
+              </TransitionGroup>
             </div>
-            
+          </div>
           </div>
           
-          <!-- Sequencer Footer Controls (Outside) -->
-          <div class="flex justify-between items-center mb-14 px-1 -mt-10 relative z-10">
-            <button @click="resetSequencer(true)" class="text-[9px] uppercase tracking-widest font-bold text-black/40 hover:text-[var(--color-liquid-lava)] transition-colors cursor-crosshair">Default Beat</button>
-            <button @click="clearSequencer" class="text-[9px] uppercase tracking-widest font-bold text-black/40 hover:text-black transition-colors cursor-crosshair">Clear Grid</button>
+          <!-- Sequencer Footer Controls (Outside, Below) -->
+          <div class="flex justify-between items-center max-w-3xl mx-auto px-4 mt-4 mb-6">
+            <button @click="resetSequencer(true)" class="text-[11px] uppercase tracking-widest font-bold text-black/40 hover:text-[var(--color-liquid-lava)] transition-colors cursor-crosshair">Default Beat</button>
+            <button @click="addLayer" class="text-[12px] font-bold tracking-widest text-black/40 hover:text-black transition-colors flex items-center gap-2 cursor-crosshair">
+              <span class="text-[16px] font-normal leading-none mb-[2px]">+</span> ADD LAYER
+            </button>
+            <button @click="clearSequencer" class="text-[11px] uppercase tracking-widest font-bold text-black/40 hover:text-black transition-colors cursor-crosshair">Clear Grid</button>
           </div>
           
-          <div class="flex items-center gap-3 mb-4 border-b border-black/20 pb-3">
+          <div class="flex items-center gap-3 mb-4 mt-12 border-b border-black/20 pb-3">
             <h2 class="text-[11px] font-bold uppercase tracking-widest m-0">Architecture</h2>
           </div>
 
