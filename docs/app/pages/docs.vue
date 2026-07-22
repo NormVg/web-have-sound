@@ -811,8 +811,9 @@ onUnmounted(() => {
             <a href="https://github.com/NormVg" target="_blank" class="hover:text-[var(--color-liquid-lava)] transition-colors">GitHub</a>
             <a href="https://taohq.org" target="_blank" class="hover:text-[var(--color-liquid-lava)] transition-colors" title="A product by TheAlphaOnes">TheAlphaOnes</a>
           </div>
-          <div class="text-xs uppercase tracking-widest font-mono opacity-60">
-            v1.6.4 &copy; TheAlphaOnes
+          <div class="text-xs uppercase tracking-widest font-mono opacity-60 flex flex-col items-end gap-1">
+            <span>Made with love by TheAlphaOnes</span>
+            <span>v1.6.4</span>
           </div>
         </div>
       </footer>
