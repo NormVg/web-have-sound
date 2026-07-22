@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { Copy, Check } from 'lucide-vue-next'
+import { Copy, Check } from '@lucide/vue'
 import {
   playUISound,
   startLoop,
@@ -232,28 +232,6 @@ onMounted(() => {
     <!-- Main Content -->
     <main class="max-w-3xl mx-auto px-6 py-16 md:py-24">
       
-      <!-- DX Sandbox Controls -->
-      <div class="bg-[var(--bg-surface-1)] border border-white/10 rounded-lg p-6 mb-16 flex flex-col sm:flex-row gap-6 sm:items-center justify-between">
-        <div>
-          <h2 class="text-sm font-semibold text-white mb-1">Interactive Sandbox</h2>
-          <p class="text-xs text-white/50">Change the global feel to preview how the library renders audio below.</p>
-        </div>
-        
-        <div class="flex items-center gap-6">
-          <div class="flex items-center gap-3">
-            <label class="text-xs text-white/50 font-mono">Feel</label>
-            <select v-model="selectedFeel" @change="playUISound('select')" class="bg-black border border-white/20 text-white text-xs px-2 py-1 rounded outline-none focus:border-white font-mono min-w-24">
-              <option v-for="feel in Object.keys(FEEL_PRESETS)" :key="feel" :value="feel">{{ feel }}</option>
-            </select>
-          </div>
-          
-          <div class="flex items-center gap-3">
-            <label class="text-xs text-white/50 font-mono">Vol</label>
-            <input type="range" min="0" max="1" step="0.05" v-model.number="masterVolume" @input="setMasterVolume(masterVolume)" class="w-20 accent-white">
-          </div>
-        </div>
-      </div>
-
       <div class="prose prose-invert prose-p:text-white/70 prose-headings:text-white prose-a:text-white prose-code:text-white/90 prose-pre:bg-[#111] prose-pre:border prose-pre:border-white/10 max-w-none">
         
         <section id="installation" class="mb-20">
@@ -300,6 +278,28 @@ playUISound('error', 'industrial'); // Override the global feel for a specific e
           <h2 class="text-xl font-semibold mb-4 tracking-tight">4. One-Shot Sounds</h2>
           <p class="mb-6">Click any of the buttons below to preview the built-in one-shot sounds. The sounds will synthesize according to the "Global Feel" selected at the top of this page.</p>
           
+          <!-- DX Sandbox Controls -->
+          <div class="bg-[var(--bg-surface-1)] border border-white/10 rounded-lg p-6 mb-8 flex flex-col sm:flex-row gap-6 sm:items-center justify-between">
+            <div>
+              <h3 class="text-sm font-semibold text-white mb-1">Interactive Sandbox</h3>
+              <p class="text-xs text-white/50">Change the global feel to preview how the library renders audio below.</p>
+            </div>
+            
+            <div class="flex items-center gap-6">
+              <div class="flex items-center gap-3">
+                <label class="text-xs text-white/50 font-mono">Feel</label>
+                <select v-model="selectedFeel" @change="playUISound('select')" class="bg-black border border-white/20 text-white text-xs px-2 py-1 rounded outline-none focus:border-white font-mono min-w-24">
+                  <option v-for="feel in Object.keys(FEEL_PRESETS)" :key="feel" :value="feel">{{ feel }}</option>
+                </select>
+              </div>
+              
+              <div class="flex items-center gap-3">
+                <label class="text-xs text-white/50 font-mono">Vol</label>
+                <input type="range" min="0" max="1" step="0.05" v-model.number="masterVolume" @input="setMasterVolume(masterVolume)" class="w-20 accent-white">
+              </div>
+            </div>
+          </div>
+
           <div class="flex flex-wrap gap-2">
             <button 
               v-for="sound in sounds" 
@@ -343,7 +343,7 @@ playUISound('error', 'industrial'); // Override the global feel for a specific e
 &lt;/button&gt;
           </pre>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div class="flex flex-col gap-6">
             <div>
               <h3 class="text-xs font-semibold text-white/50 mb-2 uppercase tracking-wider">Vue / Nuxt</h3>
               <pre class="bg-[#111] p-4 rounded border border-white/10 font-mono text-[10px] overflow-x-auto h-full">
