@@ -397,6 +397,17 @@ const copyInstall = async () => {
   }
 }
 
+const copySkillInstall = async () => {
+  try {
+    await navigator.clipboard.writeText('npx skills add https://github.com/normvg/web-have-sound --skill web-have-sounds')
+    playUISound('success')
+    triggerVisualizer()
+  } catch (e) {
+    playUISound('error')
+    triggerVisualizer()
+  }
+}
+
 const copyCode = async () => {
   let code = ''
   if (activeUsageTab.value === 'Vanilla') {
@@ -472,6 +483,18 @@ const copyCode = async () => {
               <button 
                 @pointerdown="copyInstall" 
                 class="text-[var(--color-dusty-grey)] hover:text-white transition-all cursor-pointer active:scale-[0.85] active:brightness-90 select-none p-1 -m-1"
+                title="Copy to clipboard"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              </button>
+            </div>
+            
+            <p class="pt-2 text-[11px] uppercase tracking-widest text-white/40 font-bold border-t border-white/5">Install Agent Skill</p>
+            <div class="w-full bg-[#181818] border border-[#2a2a2a] hover:border-[#333] transition-colors p-3 rounded flex justify-between items-center text-[var(--color-snow)] font-mono text-xs group">
+              <code class="text-left select-text whitespace-nowrap overflow-x-auto no-scrollbar">npx skills add https://github.com/normvg/web-have-sound --skill web-have-sounds</code>
+              <button 
+                @pointerdown="copySkillInstall" 
+                class="text-[var(--color-dusty-grey)] hover:text-white transition-all cursor-pointer active:scale-[0.85] active:brightness-90 select-none p-1 -m-1 ml-2 shrink-0"
                 title="Copy to clipboard"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>

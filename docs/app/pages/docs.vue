@@ -23,6 +23,11 @@ The library is zero-dependency and uses the native Web Audio API to synthesize a
 npm install @thenormvg/web-have-sounds
 \`\`\`
 
+**AI Agent Skill:** If you are using Claude Code, install the \`web-have-sounds\` skill directly into your project to teach your AI how to implement this library according to UI audio best practices.
+\`\`\`bash
+npx skills add https://github.com/normvg/web-have-sound --skill web-have-sounds
+\`\`\`
+
 ## 2. Quick Start
 
 You can trigger sounds manually via code, or declaratively using HTML data attributes.
@@ -617,7 +622,11 @@ onUnmounted(() => {
           <section id="installation" class="mb-20">
             <h2 class="text-xl font-semibold mb-4 tracking-tight">1. Installation</h2>
             <p class="mb-4">The library is zero-dependency and uses the native Web Audio API to synthesize all sounds procedurally. There are no MP3/WAV files to load.</p>
-            <CodeSnippet :code="codeInstall" />
+            <CodeSnippet :code="codeInstall" class="mb-8" />
+            
+            <h3 class="text-lg font-semibold mb-3 tracking-tight">AI Agent Skill</h3>
+            <p class="mb-4 text-black/70">If you are using Claude Code or an agentic assistant, install the <code>web-have-sounds</code> skill to teach your AI how to perfectly implement this library according to UI audio best practices.</p>
+            <CodeSnippet code="npx skills add https://github.com/normvg/web-have-sound --skill web-have-sounds" />
           </section>
   
           <section id="quickstart" class="mb-20">
