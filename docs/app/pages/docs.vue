@@ -476,7 +476,7 @@ onUnmounted(() => {
               v-for="sound in sounds" 
               :key="sound"
               @click="playPreview(sound)"
-              @mouseenter="playPreview('hover')"
+              @mouseenter="playUISound('hover')"
               class="bg-white hover:bg-black/5 border border-black/10 hover:border-black/20 rounded px-3 py-1.5 text-xs font-mono text-black/70 hover:text-black shadow-sm transition-colors flex items-center gap-2"
             >
               <span class="w-1.5 h-1.5 rounded-full" :class="getSoundColor(sound)"></span>
@@ -494,7 +494,7 @@ onUnmounted(() => {
               v-for="loop in loops" 
               :key="loop"
               @click="toggleDocsLoop(loop)"
-              @mouseenter="playPreview('hover')"
+              @mouseenter="playUISound('hover')"
               class="border rounded px-4 py-2 text-xs font-mono transition-colors flex items-center gap-2 shadow-sm"
               :class="activeLoop === loop ? 'bg-black text-white border-black' : 'bg-white border-black/10 text-black/70 hover:text-black hover:border-black/30'"
             >
