@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { Copy, Check } from '@lucide/vue'
+import { playUISound } from '@thenormvg/web-have-sounds'
 
 const props = defineProps<{
   code: string
@@ -10,6 +11,7 @@ const copied = ref(false)
 
 const copyToClipboard = () => {
   navigator.clipboard.writeText(props.code).then(() => {
+    playUISound('success')
     copied.value = true
     setTimeout(() => {
       copied.value = false
@@ -62,6 +64,8 @@ const highlightedCode = computed(() => {
   <div class="relative group mt-2 mb-6 h-full">
     <button 
       @click="copyToClipboard" 
+      @mouseenter="playUISound('hover')"
+      @pointerdown="playUISound('click')"
       class="absolute top-2 right-2 p-1.5 rounded bg-black/5 hover:bg-black/10 border border-black/5 text-black/50 hover:text-black/80 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer shadow-sm"
       title="Copy snippet"
     >
