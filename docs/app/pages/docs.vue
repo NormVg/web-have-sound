@@ -15,68 +15,35 @@ const agentDocsMarkdown = `# @thenormvg/web-have-sounds
 
 Procedural UI sounds via the Web Audio API — zero dependencies, zero audio files.
 
-## Features
+## 1. Installation
 
-- Zero dependencies, instant synth (no buffers to decode)
-- 9 Feels + full \`FeelParams\` (ADSR, pan, pitch)
-- 20+ built-in interaction sounds + **multi-loop system** (\`loading\`, \`processing\`, \`pulse\`, \`hum\` + custom)
-- Concurrent long-running beds with fade in/out, per-loop volume, \`registerLoop\`
-- \`registerFeel\` / \`registerSound\` — define once, use app-wide (including \`data-uisound\`)
-- SSR-safe, silent failure, autoplay-safe resume
-- Master mute + volume, spam throttling, optional randomization
-- Declarative DOM binding
-- \`debug\` mode for unknown names / bad registration
-- \`createUISounds()\` for isolated engines (tests / multi-root)
+The library is zero-dependency and uses the native Web Audio API to synthesize all sounds procedurally. There are no MP3/WAV files to load.
 
-## Quick start
-
-\`\`\`js
-import { configureUISounds, playUISound, warmUpAudio } from '@thenormvg/web-have-sounds';
-
-configureUISounds({
-  feel: 'glass',
-  volume: 0.8,
-  debug: true, // warnings in development only
-});
-
-document.addEventListener('pointerdown', () => warmUpAudio(), { once: true });
-
-button.addEventListener('click', () => {
-  playUISound('pop');
-});
+\`\`\`bash
+npm install @thenormvg/web-have-sounds
 \`\`\`
 
-### Safety guarantees
+## 2. Quick Start
 
-| Behavior | What happens |
-|----------|----------------|
-| SSR / no \`window\` | No-op, no crash |
-| AudioContext blocked / missing | No-op; warn once if \`debug\` |
-| Autoplay resume rejected | Swallowed silently |
-| Unknown sound / feel | No-op / fall back to \`aero\`; warn if \`debug\` |
-| Play path exceptions | Caught; never throw into your handler |
-
-\`playUISound\` returns a result you can ignore:
+You can trigger sounds manually via code, or declaratively using HTML data attributes.
 
 \`\`\`ts
-const result = playUISound('click');
-// { ok: true } | { ok: false, reason: 'muted' | 'ssr' | 'throttled' | 'unknown' | 'no-audio' | 'error' }
+import { configureUISounds, playUISound } from '@thenormvg/web-have-sounds';
+
+// Initialize the global engine
+configureUISounds({
+  feel: 'aero', // Try 'arcade', 'industrial', 'glass'...
+  volume: 0.8,
+});
+
+// Trigger a sound
+playUISound('click');
+playUISound('error', 'industrial'); // Override the global feel for a specific event
 \`\`\`
 
-### Error Handling Philosophy
+## 3. Architecture
 
-This library strictly prioritizes application stability and follows a **graceful degradation** model:
-
-- **Silent Failures:** The core engine extensively uses \`try/catch\` blocks internally. If a browser blocks audio due to strict autoplay policies, or a sound fails to play because of missing hardware, the error is caught and swallowed. This ensures that a failed UI sound will **never** throw an exception that could crash your React/Vue component tree.
-- **Opt-in Debugging:** If you need to debug why sounds are not playing (e.g. tracking down missing names or autoplay blocks), initialize the library with debug mode:
-  \`\`\`ts
-  configureUISounds({ debug: true });
-  \`\`\`
-  This will route all internal, non-fatal errors to \`console.warn\` so you can view them during development.
-
----
-
-## Architecture (how to think about it)
+Built-ins are pre-registered the same way as custom entries — one single code path.
 
 \`\`\`
 configure / registerFeel / registerSound / registerLoop
@@ -91,13 +58,9 @@ configure / registerFeel / registerSound / registerLoop
    synth → [pan] → [loop bus] → master → out
 \`\`\`
 
-**Gain model:** synth peaks use feel \`gainMult\` only; loop bus holds per-loop volume + fade; engine **master bus** applies live \`setMasterVolume\` to everything.
+## 4. Global Config
 
-Built-ins are pre-registered the same way as custom entries — one code path.
-
----
-
-## Global config
+Configure the global state of the singleton audio engine.
 
 \`\`\`js
 configureUISounds({
@@ -113,63 +76,50 @@ setUISoundsEnabled(false);
 setMasterVolume(0.5);
 \`\`\`
 
-One shared \`AudioContext\` is created lazily. Override per call with \`{ ctx }\` or use \`createUISounds()\` for a separate engine.
+## 5. Feels Catalog
 
----
+"Feels" are synthesizer presets that completely change the aesthetic of all sounds. They dictate the ADSR envelope multipliers, oscillator waveforms, and low-pass filter settings.
 
-## Sounds
+- \`aero\` - Clean modern sine
+- \`soft\` - Gentle, longer
+- \`glass\` - High, resonant
+- \`minimal\` - Quiet
+- \`crisp\` - Bright, quick
+- \`organic\` - Warm triangle
+- \`arcade\` - 8-bit square
+- \`retro\` - Soft square
+- \`industrial\` - Heavy saw
 
-| Type | Use |
-|------|-----|
-| \`click\` \`pop\` \`toggle\` \`thud\` | General UI |
-| \`press\` / \`release\` | Pointer down / up |
-| \`hover\` | Pointer enter (throttled 150ms) |
-| \`tick\` | Steppers (throttled) |
-| \`keystroke\` | Typing feedback (throttled 80ms) |
-| \`select\` / \`deselect\` | Lists, tabs, checkboxes |
-| \`drop\` | Dismiss / close |
-| \`delete\` / \`remove\` | Remove from list (swoosh) |
-| \`success\` \`error\` \`warning\` \`notify\` | Outcome toasts |
-| \`startup\` | Session / boot |
-| \`connect\` / \`disconnect\` | Online / websocket |
+## 6. One-Shot Sounds
 
-### Loops (long-running / ambient beds)
+Trigger these using \`playUISound(id)\` or the \`data-uisound="id"\` attribute.
 
-One-shots fire and die. **Loops** keep running until you stop them — uploads, sync, focus mode, recording.
+- \`click\`, \`pop\`, \`tick\`, \`drop\`, \`hover\`, \`thud\`
+- \`success\`, \`error\`, \`warning\`, \`notify\`
+- \`startup\`, \`connect\`, \`disconnect\`
+- \`toggle\`, \`press\`, \`release\`, \`select\`, \`deselect\`
+- \`delete\`, \`remove\`, \`keystroke\`
 
-Built-ins: \`loading\` · \`processing\` · \`pulse\` · \`hum\`
+## 7. Ambient Loops
 
-\`\`\`js
-import {
-  startLoop,
-  stopLoop,
-  stopAllLoops,
-  isLoopPlaying,
-  setLoopVolume,
-} from '@thenormvg/web-have-sounds';
+Ambient loops are long-running procedural soundscapes. They automatically fade in and out. You can run multiple loops simultaneously.
 
-// Multiple loops can run together
-startLoop('loading', { feel: 'soft' });
-startLoop('hum', { volume: 0.4, fadeIn: 0.3 });
+- \`loading\` - A pulsating, busy rhythm.
+- \`processing\` - A rhythmic data-processing sound.
+- \`pulse\` - A deep, rhythmic throb.
+- \`hum\` - A low, steady mechanical hum.
 
-setLoopVolume('loading', 0.5);
+\`\`\`ts
+import { startLoop, stopLoop } from '@thenormvg/web-have-sounds';
 
-// … upload finished …
-stopLoop('loading');
-stopAllLoops(); // or stopLoop() with no id
+startLoop('loading', { volume: 0.5 });
+// ... later ...
+stopLoop('loading'); // Or stopAllLoops();
 \`\`\`
 
-| API | Role |
-|-----|------|
-| \`startLoop(id, opts?)\` | Start / restart a loop (\`feel\`, \`pan\`, \`volume\`, \`fadeIn\`, \`ctx\`) |
-| \`stopLoop(id?, opts?)\` | Stop one, or all if id omitted (\`fadeOut\`) |
-| \`stopAllLoops()\` | Stop everything |
-| \`isLoopPlaying(id?)\` | Any active, or specific id |
-| \`getActiveLoops()\` | List of running ids |
-| \`setLoopVolume(id, 0–1)\` | Live level while playing |
-| \`registerLoop(name, synth, opts?)\` | Custom long-running bed |
+### Custom loops
 
-#### Custom loop
+You can register custom procedural loops that run indefinitely and can be faded in/out.
 
 \`\`\`js
 registerLoop(
@@ -201,99 +151,80 @@ registerLoop(
 );
 
 startLoop('upload');
-// …
 stopLoop('upload');
 \`\`\`
 
-Same \`SynthContext\` as one-shots. Return \`{ sources, dispose? }\` so teardown is clean.
+## 8. Framework Integration
 
-> **Aliases:** \`startAmbient\` / \`stopAmbient\` / \`isAmbientPlaying\` still work and map to the loop API.
-
----
-
-## Feels — when to use which
-
-| Feel | Character | Good for |
-|------|-----------|----------|
-| \`aero\` (default) | Clean modern sine | General product UI |
-| \`soft\` | Gentle, longer | Wellness, onboarding |
-| \`glass\` | High, resonant | Creative / premium |
-| \`minimal\` | Quiet | Dense dashboards |
-| \`crisp\` | Bright, quick | Productivity |
-| \`organic\` | Warm triangle | Content, community |
-| \`arcade\` | 8-bit square | Games, playful |
-| \`retro\` | Soft square | Nostalgic UI |
-| \`industrial\` | Heavy saw | Dev tools, infra |
-
-\`\`\`js
-playUISound('success', 'arcade');
-playUISound('notify', { feel: 'glass', pan: 0.5, randomize: true });
-\`\`\`
-
----
-
-## Custom feels & sounds
-
-### Feel
-
-\`\`\`js
-registerFeel('brand', {
-  filterFreq: 4200,
-  q: 6,
-  oscType: 'triangle',
-  decayMult: 0.7,
-  gainMult: 0.9,
-  pitchMult: 1.15,
-});
-
-configureUISounds({ feel: 'brand' });
-playUISound('success'); // brand
-\`\`\`
-
-### Sound
-
-\`\`\`js
-import { registerSound, synthHelpers } from '@thenormvg/web-have-sounds';
-
-registerSound(
-  'whoosh',
-  (s) => {
-    synthHelpers.tone(s, {
-      freq: 900 * s.params.pitchMult,
-      endFreq: 100,
-      duration: 0.22,
-      peak: 0.28 * s.volume,
-    });
-  },
-  { throttleMs: 120 }
-);
-
-playUISound('whoosh', 'brand');
-\`\`\`
-
-\`SynthContext\` (one-shots & loops): \`ctx\`, \`time\`, \`params\`, \`volume\` (feel \`gainMult\` only), \`connect(node)\`.
-
-\`synthHelpers\`: \`tone\`, \`noiseBurst\`, \`chord\`, \`envelope\`, \`clamp\`, \`safeOscType\`.
-
----
-
-## Declarative binding
+The easiest way to use the library is with declarative HTML attributes. Run \`bindUISounds()\` when your app mounts.
 
 \`\`\`html
-<button data-uisound="click">Save</button>
-<button data-uisound="whoosh" data-uisound-feel="brand">Go</button>
-<div data-uisound="hover" data-uisound-feel="soft">…</div>
+// HTML syntax
+<button data-uisound="click" data-uisound-hover="hover">
+  Submit
+</button>
 \`\`\`
 
-\`\`\`js
-bindUISounds(); // returns unbind()
+### Vue / Nuxt
+\`\`\`vue
+<script setup>
+import { onMounted } from 'vue'
+import { bindUISounds } from '@thenormvg/web-have-sounds'
+
+onMounted(() => {
+  bindUISounds()
+})
+<\/script>
 \`\`\`
 
-Attributes: \`data-uisound\`, \`data-uisound-feel\`, \`data-uisound-params\` (JSON), \`data-uisound-event\`, \`data-uisound-pan\`.
+### React / Next.js
+\`\`\`jsx
+import { useEffect } from 'react'
+import { bindUISounds } from '@thenormvg/web-have-sounds';
 
----
+function App() {
+  useEffect(() => {
+    return bindUISounds();
+  }, []);
+  return <div>...</div>;
+}
+\`\`\`
 
-## Isolated engine (optional)
+## 9. Custom API
+
+For advanced users, you can write your own Web Audio API nodes and register them as sounds or feels into the catalog.
+
+\`\`\`ts
+import { registerSound, playUISound } from '@thenormvg/web-have-sounds';
+
+registerSound('my_laser', ({ ctx, time, params, volume, connect }) => {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  
+  // Use the global feel params
+  osc.type = params.oscType; 
+  osc.frequency.setValueAtTime(800 * params.pitchMult, time);
+  osc.frequency.exponentialRampToValueAtTime(100, time + 0.2);
+  
+  gain.gain.setValueAtTime(volume, time);
+  gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
+  
+  osc.connect(gain);
+  
+  // Must connect to the provided connect() callback to route 
+  // through the master bus and volume controls
+  connect(gain);
+  
+  osc.start(time);
+  osc.stop(time + 0.2);
+});
+
+playUISound('my_laser');
+\`\`\`
+
+## 10. Isolated Engine (Optional)
+
+The default exported functions operate on a shared global singleton, which is perfect for most web apps. If you need a completely isolated audio context (e.g. for independent game audio, or if you have multiple isolated micro-frontends on one page), you can instantiate a separate engine.
 
 \`\`\`js
 import { createUISounds } from '@thenormvg/web-have-sounds';
@@ -304,36 +235,34 @@ sfx.play('click');
 sfx.bind({ root: document.getElementById('game') });
 \`\`\`
 
-Default package functions use a shared singleton — fine for most apps.
-
----
-
-## API cheat sheet
+## 11. API Cheat Sheet
 
 | API | Role |
 |-----|------|
-| \`playUISound\` / \`configureUISounds\` | Core |
+| \`playUISound\` / \`configureUISounds\` | Core interaction |
 | \`warmUpAudio\` / \`getAudioContext\` | Audio unlock |
 | \`setUISoundsEnabled\` / \`setMasterVolume\` | Mute & level |
 | \`registerFeel\` / \`registerSound\` | Catalog |
-| \`hasFeel\` / \`hasSound\` / \`listCustom*\` | Introspection |
 | \`startLoop\` / \`stopLoop\` / \`stopAllLoops\` | Long-running beds |
-| \`registerLoop\` / \`hasLoop\` / \`listLoops\` | Custom loops |
-| \`setLoopVolume\` / \`getActiveLoops\` / \`isLoopPlaying\` | Loop control |
-| \`startAmbient\` / \`stopAmbient\` | Deprecated aliases → loop API |
 | \`bindUISounds\` | DOM attributes |
 | \`createUISounds\` | Isolated instance |
-| \`synthHelpers\` / \`FEEL_PRESETS\` | Power tools |
 
-### \`FeelParams\`
+## 12. Error Handling Philosophy
 
-\`filterFreq\`, \`q\`, \`oscType\`, \`decayMult\`, \`gainMult\`, \`pitchMult\`, optional \`pan\`, \`attackMult\`, \`sustainLevel\`, \`releaseMult\`.
+This library is designed for UI augmentation and strictly prioritizes application stability. It follows a **"graceful degradation"** model.
 
----
+- **Silent Failures:** The library uses extensive \`try/catch\` blocks internally. If the browser blocks audio (e.g., due to autoplay policies), or if a sound fails to synthesize, the error is caught and swallowed. This guarantees that calling \`playUISound()\` will **never** throw an exception that could crash your React/Vue application.
+- **Opt-in Debugging:** If you need to troubleshoot why sounds aren't playing (e.g., missing names, bad registrations, or autoplay blocks), initialize with debug mode. This routes internal failures to \`console.warn\` so you can see them during development without crashing the app.
 
-## License
+\`\`\`ts
+import { configureUISounds } from '@thenormvg/web-have-sounds';
 
-MIT
+// Initialize with debug mode to route non-fatal 
+// audio exceptions to console.warn
+configureUISounds({ 
+  debug: true 
+});
+\`\`\`
 `
 
 const copied = ref(false)
