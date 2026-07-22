@@ -8,3 +8,6 @@ docs/.output
 docs/node_modules
 docs/dist
 .agent
+.pnpm-store
+test/
+
