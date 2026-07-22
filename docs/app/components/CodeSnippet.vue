@@ -19,12 +19,30 @@ const copyToClipboard = () => {
   })
 }
 
-// Simply escape HTML to render raw text with no syntax highlighting
 const highlightedCode = computed(() => {
-  return props.code
+  let code = props.code
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+
+  // Comments
+  code = code.replace(/(\/\/.*)/g, '<span class="text-black/40 italic">$1</span>')
+  
+  // Strings
+  code = code.replace(/(['"`])([^'"`\\]*(\\.[^'"`\\]*)*)\1/g, '<span class="text-[#d95d39]">$1$2$1</span>') // liquid lava color
+
+  // Keywords (only if not inside HTML tags)
+  const keywords = ['import', 'from', 'const', 'let', 'function', 'return', 'export', 'default', 'await', 'async']
+  const kwRegex = new RegExp(`\\b(${keywords.join('|')})\\b(?![^<]*>)`, 'g')
+  code = code.replace(kwRegex, '<span class="text-blue-600 font-medium">$1</span>')
+
+  // Function calls
+  code = code.replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)(?=\s*\()/g, (match, p1) => {
+    if (keywords.includes(p1)) return match
+    return `<span class="text-purple-600">${p1}</span>`
+  })
+
+  return code
 })
 </script>
 
