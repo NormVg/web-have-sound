@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd docs && npm install && npm run generate",
+  "outputDirectory": "docs/.output/public",
+  "installCommand": "npm install"
+}
