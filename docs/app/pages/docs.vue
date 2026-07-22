@@ -209,28 +209,28 @@ onMounted(() => {
   <div class="min-h-[100dvh] bg-[#d4d4d4] font-mono selection:bg-[var(--color-liquid-lava)] selection:text-white">
     
     <!-- THE CENTERED COLUMN (Physical Unit) -->
-    <div class="w-full max-w-[900px] mx-auto min-h-[100dvh] flex flex-col shadow-[0_0_60px_rgba(0,0,0,0.25)] border-l-[6px] border-r-[6px] border-[#1a1a1a] relative bg-[var(--color-dark-void)] text-[var(--color-snow)]">
+    <div class="w-full max-w-[900px] mx-auto min-h-[100dvh] flex flex-col shadow-[0_0_60px_rgba(0,0,0,0.25)] border-l-[6px] border-r-[6px] border-[#1a1a1a] relative bg-[var(--color-snow)] text-[var(--color-dark-void)]">
       
       <!-- Inner chamfer highlights -->
-      <div class="absolute inset-y-0 left-0 w-[1px] bg-white/10 z-10 pointer-events-none"></div>
-      <div class="absolute inset-y-0 right-0 w-[1px] bg-white/5 z-10 pointer-events-none"></div>
+      <div class="absolute inset-y-0 left-0 w-[1px] bg-black/10 z-10 pointer-events-none"></div>
+      <div class="absolute inset-y-0 right-0 w-[1px] bg-black/5 z-10 pointer-events-none"></div>
 
       <!-- Minimal Top Nav -->
-      <header class="border-b border-white/5 sticky top-0 bg-[var(--color-dark-void)]/90 backdrop-blur-md z-50">
+      <header class="border-b border-black/5 sticky top-0 bg-[var(--color-snow)]/90 backdrop-blur-md z-50">
         <div class="max-w-3xl mx-auto px-8 h-16 flex items-center justify-between">
           <NuxtLink to="/" class="flex items-center gap-3 group" title="Back to Sequencer" data-uisound="hover">
             <div class="w-2 h-2 rounded-full bg-[var(--color-liquid-lava)] group-hover:shadow-[0_0_12px_var(--color-liquid-lava)] transition-shadow duration-300"></div>
-            <h1 class="text-[13px] font-medium tracking-wide text-white group-hover:text-white/90 transition-colors font-sans uppercase">
+            <h1 class="text-[13px] font-medium tracking-wide text-black group-hover:text-black/70 transition-colors font-sans uppercase">
               Web Have Sounds
             </h1>
           </NuxtLink>
           
           <div class="flex items-center gap-5 text-[11px] uppercase tracking-widest font-medium">
-            <a href="#installation" class="hidden sm:block text-[var(--color-dusty-grey)] hover:text-white transition-colors" data-uisound="hover">Install</a>
-            <a href="#quickstart" class="hidden sm:block text-[var(--color-dusty-grey)] hover:text-white transition-colors" data-uisound="hover">Usage</a>
-            <a href="#customization" class="hidden sm:block text-[var(--color-dusty-grey)] hover:text-white transition-colors" data-uisound="hover">API</a>
-            <div class="w-[1px] h-3 bg-white/10 hidden sm:block mx-1"></div>
-            <button @click="copyDocs" class="flex items-center gap-1.5 text-[var(--color-dusty-grey)] hover:text-white transition-colors" data-uisound="hover">
+            <a href="#installation" class="hidden sm:block text-black/50 hover:text-[var(--color-liquid-lava)] transition-colors" data-uisound="hover">Install</a>
+            <a href="#quickstart" class="hidden sm:block text-black/50 hover:text-[var(--color-liquid-lava)] transition-colors" data-uisound="hover">Usage</a>
+            <a href="#customization" class="hidden sm:block text-black/50 hover:text-[var(--color-liquid-lava)] transition-colors" data-uisound="hover">API</a>
+            <div class="w-[1px] h-3 bg-black/10 hidden sm:block mx-1"></div>
+            <button @click="copyDocs" class="flex items-center gap-1.5 text-black/50 hover:text-[var(--color-liquid-lava)] transition-colors" data-uisound="hover">
               <Copy v-if="!copied" class="w-3.5 h-3.5 opacity-70" />
               <Check v-else class="w-3.5 h-3.5 text-[var(--color-liquid-lava)]" />
               {{ copied ? 'COPIED' : 'COPY MD' }}
@@ -242,18 +242,18 @@ onMounted(() => {
     <!-- Main Content -->
       <main class="max-w-3xl w-full mx-auto px-8 py-16 md:py-24 font-sans">
         
-        <div class="prose prose-invert prose-p:text-[var(--color-dusty-grey)] prose-p:text-[14px] prose-p:leading-relaxed prose-headings:text-[var(--color-snow)] prose-a:text-[var(--color-liquid-lava)] hover:prose-a:text-[#ff8f40] prose-code:text-[var(--color-snow)] prose-pre:bg-[#111] prose-pre:border prose-pre:border-[#2a2a2a] max-w-none">
+        <div class="prose prose-p:text-black/70 prose-p:text-[14px] prose-p:leading-relaxed prose-headings:text-black prose-a:text-[var(--color-liquid-lava)] hover:prose-a:text-[#ff8f40] prose-code:text-black prose-pre:bg-[#f5f5f5] prose-pre:border prose-pre:border-black/5 max-w-none">
         
         <section id="installation" class="mb-20">
           <h2 class="text-xl font-semibold mb-4 tracking-tight">1. Installation</h2>
           <p class="mb-4">The library is zero-dependency and uses the native Web Audio API to synthesize all sounds procedurally. There are no MP3/WAV files to load.</p>
-          <pre class="bg-[#111] p-4 rounded border border-white/10 font-mono text-xs overflow-x-auto">npm install @thenormvg/web-have-sounds</pre>
+          <pre class="bg-[#f5f5f5] p-4 rounded border border-black/5 font-mono text-xs overflow-x-auto">npm install @thenormvg/web-have-sounds</pre>
         </section>
 
         <section id="quickstart" class="mb-20">
           <h2 class="text-xl font-semibold mb-4 tracking-tight">2. Quick Start</h2>
           <p class="mb-4">You can trigger sounds manually via code, or declaratively using HTML data attributes.</p>
-          <pre class="bg-[#111] p-4 rounded border border-white/10 font-mono text-xs overflow-x-auto">
+          <pre class="bg-[#f5f5f5] p-4 rounded border border-black/5 font-mono text-xs overflow-x-auto">
 import { configureUISounds, playUISound } from '@thenormvg/web-have-sounds';
 
 // Initialize the global engine
@@ -273,9 +273,9 @@ playUISound('error', 'industrial'); // Override the global feel for a specific e
           <p class="mb-6">"Feels" are synthesizer presets that completely change the aesthetic of all sounds. They dictate the ADSR envelope multipliers, oscillator waveforms, and low-pass filter settings.</p>
           
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div v-for="(params, name) in FEEL_PRESETS" :key="name" class="bg-[var(--bg-surface-1)] p-3 rounded border border-white/10 hover:border-white/30 transition-colors">
+            <div v-for="(params, name) in FEEL_PRESETS" :key="name" class="bg-white p-3 rounded border border-black/10 hover:border-[var(--color-liquid-lava)] shadow-sm transition-colors">
               <div class="font-semibold text-sm mb-1 capitalize">{{ name }}</div>
-              <div class="text-[10px] font-mono text-white/40">
+              <div class="text-[10px] font-mono text-black/50">
                 Osc: {{ params.oscType }}<br>
                 Freq: {{ params.filterFreq }}Hz<br>
                 Q: {{ params.q }}
@@ -289,23 +289,23 @@ playUISound('error', 'industrial'); // Override the global feel for a specific e
           <p class="mb-6">Click any of the buttons below to preview the built-in one-shot sounds. The sounds will synthesize according to the "Global Feel" selected at the top of this page.</p>
           
           <!-- DX Sandbox Controls -->
-          <div class="bg-[var(--bg-surface-1)] border border-white/10 rounded-lg p-6 mb-8 flex flex-col sm:flex-row gap-6 sm:items-center justify-between">
+          <div class="bg-black/5 border border-black/10 rounded-lg p-6 mb-8 flex flex-col sm:flex-row gap-6 sm:items-center justify-between">
             <div>
-              <h3 class="text-sm font-semibold text-white mb-1">Interactive Sandbox</h3>
-              <p class="text-xs text-white/50">Change the global feel to preview how the library renders audio below.</p>
+              <h3 class="text-sm font-semibold text-black mb-1">Interactive Sandbox</h3>
+              <p class="text-xs text-black/60">Change the global feel to preview how the library renders audio below.</p>
             </div>
             
             <div class="flex items-center gap-6">
               <div class="flex items-center gap-3">
-                <label class="text-xs text-white/50 font-mono">Feel</label>
-                <select v-model="selectedFeel" @change="playUISound('select')" class="bg-black border border-white/20 text-white text-xs px-2 py-1 rounded outline-none focus:border-white font-mono min-w-24">
+                <label class="text-xs text-black/50 font-mono">Feel</label>
+                <select v-model="selectedFeel" @change="playUISound('select')" class="bg-white border border-black/20 text-black text-xs px-2 py-1 rounded outline-none focus:border-black font-mono min-w-24">
                   <option v-for="feel in Object.keys(FEEL_PRESETS)" :key="feel" :value="feel">{{ feel }}</option>
                 </select>
               </div>
               
               <div class="flex items-center gap-3">
-                <label class="text-xs text-white/50 font-mono">Vol</label>
-                <input type="range" min="0" max="1" step="0.05" v-model.number="masterVolume" @input="setMasterVolume(masterVolume)" class="w-20 accent-white">
+                <label class="text-xs text-black/50 font-mono">Vol</label>
+                <input type="range" min="0" max="1" step="0.05" v-model.number="masterVolume" @input="setMasterVolume(masterVolume)" class="w-20 accent-[var(--color-liquid-lava)]">
               </div>
             </div>
           </div>
@@ -316,7 +316,7 @@ playUISound('error', 'industrial'); // Override the global feel for a specific e
               :key="sound"
               @click="playPreview(sound)"
               @mouseenter="playPreview('hover')"
-              class="bg-[var(--bg-surface-1)] hover:bg-white/10 border border-white/10 rounded px-3 py-1.5 text-xs font-mono text-white/70 hover:text-white transition-colors"
+              class="bg-white hover:bg-black/5 border border-black/10 hover:border-black/20 rounded px-3 py-1.5 text-xs font-mono text-black/70 hover:text-black shadow-sm transition-colors"
             >
               {{ sound }}
             </button>
@@ -333,10 +333,10 @@ playUISound('error', 'industrial'); // Override the global feel for a specific e
               :key="loop"
               @click="toggleDocsLoop(loop)"
               @mouseenter="playPreview('hover')"
-              class="border rounded px-4 py-2 text-xs font-mono transition-colors flex items-center gap-2"
-              :class="activeLoop === loop ? 'bg-white text-black border-white' : 'bg-[var(--bg-surface-1)] border-white/10 text-white/70 hover:text-white hover:border-white/30'"
+              class="border rounded px-4 py-2 text-xs font-mono transition-colors flex items-center gap-2 shadow-sm"
+              :class="activeLoop === loop ? 'bg-black text-white border-black' : 'bg-white border-black/10 text-black/70 hover:text-black hover:border-black/30'"
             >
-              <span class="w-1.5 h-1.5 rounded-full" :class="activeLoop === loop ? 'bg-red-500 animate-pulse' : 'bg-white/20'"></span>
+              <span class="w-1.5 h-1.5 rounded-full" :class="activeLoop === loop ? 'bg-red-500 animate-pulse' : 'bg-black/20'"></span>
               <span class="uppercase">{{ loop }}</span>
             </button>
           </div>
@@ -344,9 +344,9 @@ playUISound('error', 'industrial'); // Override the global feel for a specific e
 
         <section id="frameworks" class="mb-20">
           <h2 class="text-xl font-semibold mb-4 tracking-tight">6. Framework Integration</h2>
-          <p class="mb-4">The easiest way to use the library is with declarative HTML attributes. Run <code class="bg-[var(--bg-surface-1)] px-1.5 py-0.5 rounded text-white border border-white/10">bindUISounds()</code> when your app mounts.</p>
+          <p class="mb-4">The easiest way to use the library is with declarative HTML attributes. Run <code class="bg-black/5 px-1.5 py-0.5 rounded text-black border border-black/10">bindUISounds()</code> when your app mounts.</p>
           
-          <pre class="bg-[#111] p-4 rounded border border-white/10 font-mono text-xs overflow-x-auto mb-6">
+          <pre class="bg-[#f5f5f5] p-4 rounded border border-black/5 font-mono text-xs overflow-x-auto mb-6">
 // HTML syntax
 &lt;button data-uisound="click" data-uisound-hover="hover"&gt;
   Submit
@@ -355,8 +355,8 @@ playUISound('error', 'industrial'); // Override the global feel for a specific e
 
           <div class="flex flex-col gap-6">
             <div>
-              <h3 class="text-xs font-semibold text-white/50 mb-2 uppercase tracking-wider">Vue / Nuxt</h3>
-              <pre class="bg-[#111] p-4 rounded border border-white/10 font-mono text-[10px] overflow-x-auto h-full">
+              <h3 class="text-xs font-semibold text-black/50 mb-2 uppercase tracking-wider">Vue / Nuxt</h3>
+              <pre class="bg-[#f5f5f5] p-4 rounded border border-black/5 font-mono text-[10px] overflow-x-auto h-full">
 import { onMounted, onUnmounted } from 'vue';
 import { bindUISounds } from '@thenormvg/web-have-sounds';
 
@@ -372,8 +372,8 @@ export default {
             </div>
             
             <div>
-              <h3 class="text-xs font-semibold text-white/50 mb-2 uppercase tracking-wider">React / Next.js</h3>
-              <pre class="bg-[#111] p-4 rounded border border-white/10 font-mono text-[10px] overflow-x-auto h-full">
+              <h3 class="text-xs font-semibold text-black/50 mb-2 uppercase tracking-wider">React / Next.js</h3>
+              <pre class="bg-[#f5f5f5] p-4 rounded border border-black/5 font-mono text-[10px] overflow-x-auto h-full">
 import { useEffect } from 'react';
 import { bindUISounds } from '@thenormvg/web-have-sounds';
 
@@ -392,7 +392,7 @@ function App() {
           <h2 class="text-xl font-semibold mb-4 tracking-tight">7. Custom API</h2>
           <p class="mb-6">For advanced users, you can write your own Web Audio API nodes and register them as sounds or feels into the catalog.</p>
           
-          <pre class="bg-[#111] p-4 rounded border border-white/10 font-mono text-xs overflow-x-auto">
+          <pre class="bg-[#f5f5f5] p-4 rounded border border-black/5 font-mono text-xs overflow-x-auto">
 import { registerSound, playUISound } from '@thenormvg/web-have-sounds';
 
 registerSound('my_laser', ({ ctx, time, params, volume, connect }) => {
@@ -426,6 +426,7 @@ playUISound('my_laser');
     </div>
   </div>
 </template>
+
 
 <style scoped>
 html {
