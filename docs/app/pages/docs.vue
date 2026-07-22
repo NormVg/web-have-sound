@@ -176,6 +176,32 @@ const sounds = [
 
 const loops = ['loading', 'processing', 'pulse', 'hum']
 
+const getSoundColor = (id: string) => {
+  const colors: Record<string, string> = {
+    success: 'bg-emerald-500',
+    startup: 'bg-emerald-400',
+    connect: 'bg-emerald-400',
+    error: 'bg-rose-500',
+    delete: 'bg-rose-400',
+    remove: 'bg-rose-400',
+    warning: 'bg-amber-500',
+    disconnect: 'bg-amber-400',
+    notify: 'bg-blue-500',
+    toggle: 'bg-indigo-400',
+    press: 'bg-indigo-400',
+    release: 'bg-indigo-300',
+    select: 'bg-indigo-400',
+    deselect: 'bg-indigo-300',
+    drop: 'bg-cyan-400',
+    pop: 'bg-[var(--color-liquid-lava)]',
+    click: 'bg-zinc-400',
+    tick: 'bg-zinc-400',
+    hover: 'bg-zinc-400',
+    keystroke: 'bg-zinc-400'
+  }
+  return colors[id] || 'bg-zinc-400'
+}
+
 const toggleDocsLoop = (loopId: string) => {
   if (activeLoop.value === loopId) {
     stopLoop(loopId)
@@ -316,8 +342,9 @@ playUISound('error', 'industrial'); // Override the global feel for a specific e
               :key="sound"
               @click="playPreview(sound)"
               @mouseenter="playPreview('hover')"
-              class="bg-white hover:bg-black/5 border border-black/10 hover:border-black/20 rounded px-3 py-1.5 text-xs font-mono text-black/70 hover:text-black shadow-sm transition-colors"
+              class="bg-white hover:bg-black/5 border border-black/10 hover:border-black/20 rounded px-3 py-1.5 text-xs font-mono text-black/70 hover:text-black shadow-sm transition-colors flex items-center gap-2"
             >
+              <span class="w-1.5 h-1.5 rounded-full" :class="getSoundColor(sound)"></span>
               {{ sound }}
             </button>
           </div>
