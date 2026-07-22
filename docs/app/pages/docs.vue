@@ -205,34 +205,44 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[var(--bg-root)] text-[var(--text-primary)] font-sans selection:bg-white selection:text-black">
+  <!-- Neutral physical desk background outside the column -->
+  <div class="min-h-[100dvh] bg-[#d4d4d4] font-mono selection:bg-[var(--color-liquid-lava)] selection:text-white">
     
-    <!-- Minimal Top Nav -->
-    <header class="border-b border-white/10 sticky top-0 bg-[var(--bg-root)]/90 backdrop-blur-md z-50">
-      <div class="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
-        <NuxtLink to="/" class="flex items-center gap-2 group" title="Back to Sequencer" data-uisound="hover">
-          <div class="w-2 h-2 rounded-full bg-white group-hover:shadow-[0_0_8px_rgba(255,255,255,0.8)] transition-shadow duration-300"></div>
-          <h1 class="text-[13px] font-semibold tracking-tight text-white group-hover:text-white/90 transition-colors">Web Have Sounds</h1>
-        </NuxtLink>
-        
-        <div class="flex items-center gap-5 text-[13px] font-medium">
-          <a href="#installation" class="hidden sm:block text-white/50 hover:text-white transition-colors" data-uisound="hover">Install</a>
-          <a href="#quickstart" class="hidden sm:block text-white/50 hover:text-white transition-colors" data-uisound="hover">Usage</a>
-          <a href="#customization" class="hidden sm:block text-white/50 hover:text-white transition-colors" data-uisound="hover">API</a>
-          <div class="w-[1px] h-3 bg-white/10 hidden sm:block mx-1"></div>
-          <button @click="copyDocs" class="flex items-center gap-1.5 text-white/70 hover:text-white transition-colors" data-uisound="hover">
-            <Copy v-if="!copied" class="w-3.5 h-3.5 opacity-70" />
-            <Check v-else class="w-3.5 h-3.5 text-green-400" />
-            {{ copied ? 'Copied' : 'Copy MD' }}
-          </button>
+    <!-- THE CENTERED COLUMN (Physical Unit) -->
+    <div class="w-full max-w-[900px] mx-auto min-h-[100dvh] flex flex-col shadow-[0_0_60px_rgba(0,0,0,0.25)] border-l-[6px] border-r-[6px] border-[#1a1a1a] relative bg-[var(--color-dark-void)] text-[var(--color-snow)]">
+      
+      <!-- Inner chamfer highlights -->
+      <div class="absolute inset-y-0 left-0 w-[1px] bg-white/10 z-10 pointer-events-none"></div>
+      <div class="absolute inset-y-0 right-0 w-[1px] bg-white/5 z-10 pointer-events-none"></div>
+
+      <!-- Minimal Top Nav -->
+      <header class="border-b border-white/5 sticky top-0 bg-[var(--color-dark-void)]/90 backdrop-blur-md z-50">
+        <div class="max-w-3xl mx-auto px-8 h-16 flex items-center justify-between">
+          <NuxtLink to="/" class="flex items-center gap-3 group" title="Back to Sequencer" data-uisound="hover">
+            <div class="w-2 h-2 rounded-full bg-[var(--color-liquid-lava)] group-hover:shadow-[0_0_12px_var(--color-liquid-lava)] transition-shadow duration-300"></div>
+            <h1 class="text-[13px] font-medium tracking-wide text-white group-hover:text-white/90 transition-colors font-sans uppercase">
+              Web Have Sounds
+            </h1>
+          </NuxtLink>
+          
+          <div class="flex items-center gap-5 text-[11px] uppercase tracking-widest font-medium">
+            <a href="#installation" class="hidden sm:block text-[var(--color-dusty-grey)] hover:text-white transition-colors" data-uisound="hover">Install</a>
+            <a href="#quickstart" class="hidden sm:block text-[var(--color-dusty-grey)] hover:text-white transition-colors" data-uisound="hover">Usage</a>
+            <a href="#customization" class="hidden sm:block text-[var(--color-dusty-grey)] hover:text-white transition-colors" data-uisound="hover">API</a>
+            <div class="w-[1px] h-3 bg-white/10 hidden sm:block mx-1"></div>
+            <button @click="copyDocs" class="flex items-center gap-1.5 text-[var(--color-dusty-grey)] hover:text-white transition-colors" data-uisound="hover">
+              <Copy v-if="!copied" class="w-3.5 h-3.5 opacity-70" />
+              <Check v-else class="w-3.5 h-3.5 text-[var(--color-liquid-lava)]" />
+              {{ copied ? 'COPIED' : 'COPY MD' }}
+            </button>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
 
     <!-- Main Content -->
-    <main class="max-w-3xl mx-auto px-6 py-16 md:py-24">
-      
-      <div class="prose prose-invert prose-p:text-white/70 prose-headings:text-white prose-a:text-white prose-code:text-white/90 prose-pre:bg-[#111] prose-pre:border prose-pre:border-white/10 max-w-none">
+      <main class="max-w-3xl w-full mx-auto px-8 py-16 md:py-24 font-sans">
+        
+        <div class="prose prose-invert prose-p:text-[var(--color-dusty-grey)] prose-p:text-[14px] prose-p:leading-relaxed prose-headings:text-[var(--color-snow)] prose-a:text-[var(--color-liquid-lava)] hover:prose-a:text-[#ff8f40] prose-code:text-[var(--color-snow)] prose-pre:bg-[#111] prose-pre:border prose-pre:border-[#2a2a2a] max-w-none">
         
         <section id="installation" class="mb-20">
           <h2 class="text-xl font-semibold mb-4 tracking-tight">1. Installation</h2>
@@ -412,7 +422,8 @@ playUISound('my_laser');
         </section>
 
       </div>
-    </main>
+      </main>
+    </div>
   </div>
 </template>
 
