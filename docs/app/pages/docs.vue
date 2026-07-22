@@ -270,7 +270,7 @@ onMounted(() => {
         <section id="quickstart" class="mb-16">
           <h2 class="text-3xl font-bold mb-6 tracking-tight">2. Quick Start</h2>
           <p class="text-white/70 mb-4">You can trigger sounds manually via code, or declaratively using HTML data attributes.</p>
-          <div class="bg-[#111] p-6 rounded-lg border border-white/10 font-mono text-xs text-white/80 overflow-x-auto whitespace-pre">
+          <pre class="bg-[#111] p-6 rounded-lg border border-white/10 font-mono text-xs text-white/80 overflow-x-auto">
 import { configureUISounds, playUISound } from '@thenormvg/web-have-sounds';
 
 // Initialize the global engine
@@ -282,7 +282,7 @@ configureUISounds({
 // Trigger a sound
 playUISound('click');
 playUISound('error', 'industrial'); // Override the global feel for a specific event
-          </div>
+          </pre>
         </section>
 
         <section id="feels" class="mb-16">
@@ -341,17 +341,17 @@ playUISound('error', 'industrial'); // Override the global feel for a specific e
           <h2 class="text-3xl font-bold mb-6 tracking-tight">6. Framework Integration</h2>
           <p class="text-white/70 mb-4">The easiest way to use the library is with declarative HTML attributes. Run <code>bindUISounds()</code> when your app mounts.</p>
           
-          <div class="bg-[#111] p-6 rounded-lg border border-white/10 font-mono text-xs text-white/80 overflow-x-auto whitespace-pre mb-4">
+          <pre class="bg-[#111] p-6 rounded-lg border border-white/10 font-mono text-xs text-white/80 overflow-x-auto mb-4">
 // HTML syntax
 &lt;button data-uisound="click" data-uisound-hover="hover"&gt;
   Submit
 &lt;/button&gt;
-          </div>
+          </pre>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 class="text-sm font-bold text-[var(--color-liquid-lava)] mb-2 uppercase tracking-widest">Vue / Nuxt</h3>
-              <div class="bg-[#111] p-4 rounded-lg border border-white/10 font-mono text-[10px] text-white/80 overflow-x-auto whitespace-pre">
+              <pre class="bg-[#111] p-4 rounded-lg border border-white/10 font-mono text-[10px] text-white/80 overflow-x-auto">
 import { onMounted, onUnmounted } from 'vue';
 import { bindUISounds } from '@thenormvg/web-have-sounds';
 
@@ -363,12 +363,12 @@ export default {
     });
   }
 }
-              </div>
+              </pre>
             </div>
             
             <div>
               <h3 class="text-sm font-bold text-[var(--color-liquid-lava)] mb-2 uppercase tracking-widest">React / Next.js</h3>
-              <div class="bg-[#111] p-4 rounded-lg border border-white/10 font-mono text-[10px] text-white/80 overflow-x-auto whitespace-pre">
+              <pre class="bg-[#111] p-4 rounded-lg border border-white/10 font-mono text-[10px] text-white/80 overflow-x-auto">
 import { useEffect } from 'react';
 import { bindUISounds } from '@thenormvg/web-have-sounds';
 
@@ -378,7 +378,7 @@ function App() {
   }, []);
   return &lt;div&gt;...&lt;/div&gt;;
 }
-              </div>
+              </pre>
             </div>
           </div>
         </section>
@@ -387,7 +387,7 @@ function App() {
           <h2 class="text-3xl font-bold mb-6 tracking-tight">7. Custom API</h2>
           <p class="text-white/70 mb-6">For advanced users, you can write your own Web Audio API nodes and register them as sounds or feels into the catalog.</p>
           
-          <div class="bg-[#111] p-6 rounded-lg border border-white/10 font-mono text-xs text-white/80 overflow-x-auto whitespace-pre">
+          <pre class="bg-[#111] p-6 rounded-lg border border-white/10 font-mono text-xs text-white/80 overflow-x-auto">
 import { registerSound, playUISound } from '@thenormvg/web-have-sounds';
 
 registerSound('my_laser', ({ ctx, time, params, volume, connect }) => {
@@ -413,7 +413,7 @@ registerSound('my_laser', ({ ctx, time, params, volume, connect }) => {
 });
 
 playUISound('my_laser');
-          </div>
+          </pre>
         </section>
 
       </div>
