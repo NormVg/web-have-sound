@@ -11,155 +11,7 @@ import {
   bindUISounds,
 } from '@thenormvg/web-have-sounds'
 
-const agentDocsMarkdown = `
-# @thenormvg/web-have-sounds
-
-A high-performance, zero-dependency, procedural audio synthesizer library for UI interactions.
-
-## Installation
-\`\`\`bash
-npm install @thenormvg/web-have-sounds
-\`\`\`
-
-## Quick Start
-\`\`\`ts
-import { configureUISounds, playUISound } from '@thenormvg/web-have-sounds';
-
-// 1. Configure the engine (optional, defaults are provided)
-configureUISounds({
-  feel: 'aero', // The global synthesis profile
-  volume: 0.8,
-});
-
-// 2. Play a sound!
-playUISound('click');
-\`\`\`
-
-## Feel Presets
-The library ships with several procedural synthesis algorithms called "Feels". These dictate the ADSR, filter frequency, oscillator type, and resonance of all sounds.
-
-- \`aero\` - Light, airy, fast. (Default)
-- \`arcade\` - Crunchy square waves, retro.
-- \`industrial\` - Heavy, distorted, metallic.
-- \`organic\` - Soft, sine-wave dominant, natural.
-- \`glass\` - High-pitched, resonant, sharp.
-- \`minimal\` - Extremely short, quiet ticks.
-- \`retro\` - 8-bit game console style.
-- \`crisp\` - Sharp attack, bright filters.
-- \`soft\` - High damping, muted filters.
-
-## One-Shot Sounds
-Trigger these using \`playUISound(id)\` or the \`data-uisound="id"\` attribute.
-
-- \`click\`, \`pop\`, \`tick\`, \`drop\`, \`hover\`, \`thud\`
-- \`success\`, \`error\`, \`warning\`, \`notify\`
-- \`startup\`, \`connect\`, \`disconnect\`
-- \`toggle\`, \`press\`, \`release\`, \`select\`, \`deselect\`
-- \`delete\`, \`remove\`, \`keystroke\`
-
-## Ambient Beds (Loops)
-Trigger continuous, evolving soundscapes.
-
-- \`loading\` - A pulsating, busy rhythm.
-- \`processing\` - A rhythmic data-processing sound.
-- \`pulse\` - A deep, rhythmic throb.
-- \`hum\` - A low, steady mechanical hum.
-
-\`\`\`ts
-import { startLoop, stopLoop } from '@thenormvg/web-have-sounds';
-
-startLoop('loading', { volume: 0.5 });
-// ... later ...
-stopLoop('loading'); // Or stopAllLoops();
-\`\`\`
-
-## Framework Usage
-
-### Vue 3
-Use declarative HTML attributes and the binding utility.
-\`\`\`vue
-<script setup>
-import { onMounted } from 'vue';
-import { bindUISounds } from '@thenormvg/web-have-sounds';
-
-onMounted(() => {
-  // Automatically attaches event listeners to all elements with data-uisound
-  bindUISounds();
-});
-<\/script>
-<template>
-  <button data-uisound="click" data-uisound-hover="hover">Click me</button>
-</template>
-\`\`\`
-
-### React
-\`\`\`jsx
-import { useEffect } from 'react';
-import { bindUISounds, playUISound } from '@thenormvg/web-have-sounds';
-
-function App() {
-  useEffect(() => {
-    return bindUISounds();
-  }, []);
-
-  return (
-    <button data-uisound="click" onMouseEnter={() => playUISound('hover')}>
-      Click me
-    </button>
-  );
-}
-\`\`\`
-
-## Customization API
-You can inject your own synthesis functions to create completely custom sounds.
-
-\`\`\`ts
-import { registerSound, registerFeel, registerLoop } from '@thenormvg/web-have-sounds';
-
-// Custom Feel
-registerFeel('alien', {
-  oscType: 'sawtooth',
-  filterFreq: 4000,
-  q: 15,
-  decayMult: 2.0,
-  pitchMult: 0.5,
-  gainMult: 1.0,
-});
-
-// Custom Sound
-registerSound('laser', ({ ctx, time, params, volume, connect }) => {
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  
-  osc.type = params.oscType;
-  osc.frequency.setValueAtTime(800 * params.pitchMult, time);
-  osc.frequency.exponentialRampToValueAtTime(100, time + 0.2);
-  
-  gain.gain.setValueAtTime(volume, time);
-  gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
-  
-  osc.connect(gain);
-  connect(gain); // Connects to the master output with spatial panning
-  
-  osc.start(time);
-  osc.stop(time + 0.2);
-});
-
-playUISound('laser', 'alien');
-\`\`\`
-
-## Error Handling Philosophy
-This library is designed for UI augmentation and strictly prioritizes application stability. It follows a "graceful degradation" model.
-
-- **Silent Failures:** The library uses extensive \`try/catch\` blocks internally. If the browser blocks audio (e.g., due to autoplay policies), or if a sound fails to synthesize, the error is caught and swallowed. This guarantees that calling \`playUISound()\` will **never** throw an exception that could crash your React/Vue application.
-- **Opt-in Debugging:** If you need to troubleshoot why sounds aren't playing (e.g., missing names, bad registrations, or autoplay blocks), enable debug mode:
-\`\`\`ts
-import { configureUISounds } from '@thenormvg/web-have-sounds';
-
-configureUISounds({ debug: true });
-\`\`\`
-This routes internal failures to \`console.warn\` so you can see them during development without crashing the app.
-`
+import agentDocsMarkdown from '../../../README.md?raw'
 
 const copied = ref(false)
 
@@ -395,6 +247,67 @@ configureUISounds({
   debug: true 
 });`
 
+const codeGlobalConfig = `configureUISounds({
+  feel: 'industrial',
+  volume: 0.7,
+  enabled: true,
+  randomize: true,
+  throttleMs: { hover: 150, keystroke: 80 },
+  debug: true, // console.warn for typos & bad setup
+});
+
+setUISoundsEnabled(false);
+setMasterVolume(0.5);`
+
+const codeArchitecture = `configure / registerFeel / registerSound / registerLoop
+                    ↓
+              Catalog (names)
+         ┌──────────┴──────────┐
+     play()                 LoopRuntime
+   (one-shots)            (long-running)
+         └──────────┬──────────┘
+                    ↓
+            AudioEngine
+   synth → [pan] → [loop bus] → master → out`
+
+const codeCustomLoop = `registerLoop(
+  'upload',
+  ({ ctx, time, params, volume, connect }) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const lfo = ctx.createOscillator();
+    const lfoGain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.value = 330 * params.pitchMult;
+    gain.gain.value = 0.06 * volume;
+
+    lfo.frequency.value = 3;
+    lfoGain.gain.value = 0.03 * volume;
+    lfo.connect(lfoGain);
+    lfoGain.connect(gain.gain);
+
+    osc.connect(gain);
+    connect(gain);
+    osc.start(time);
+    lfo.start(time);
+
+    // Return sources so stopLoop can end them after fade-out
+    return { sources: [osc, lfo] };
+  },
+  { fadeIn: 0.1, fadeOut: 0.25 }
+);
+
+startLoop('upload');
+stopLoop('upload');`
+
+const codeIsolatedEngine = `import { createUISounds } from '@thenormvg/web-have-sounds';
+
+const sfx = createUISounds();
+sfx.configure({ feel: 'arcade', debug: true });
+sfx.play('click');
+sfx.bind({ root: document.getElementById('game') });`
+
 onMounted(() => {
   configureUISounds({
     feel: selectedFeel.value,
@@ -461,8 +374,20 @@ onUnmounted(() => {
             <CodeSnippet :code="codeQuickstart" />
           </section>
 
+          <section id="architecture" class="mb-20">
+            <h2 class="text-xl font-semibold mb-4 tracking-tight">3. Architecture</h2>
+            <p class="mb-4">Built-ins are pre-registered the same way as custom entries — one single code path.</p>
+            <CodeSnippet :code="codeArchitecture" />
+          </section>
+
+          <section id="config" class="mb-20">
+            <h2 class="text-xl font-semibold mb-4 tracking-tight">4. Global Config</h2>
+            <p class="mb-4">Configure the global state of the singleton audio engine.</p>
+            <CodeSnippet :code="codeGlobalConfig" />
+          </section>
+
         <section id="feels" class="mb-20">
-          <h2 class="text-xl font-semibold mb-4 tracking-tight">3. Feels Catalog</h2>
+          <h2 class="text-xl font-semibold mb-4 tracking-tight">5. Feels Catalog</h2>
           <p class="mb-6">"Feels" are synthesizer presets that completely change the aesthetic of all sounds. They dictate the ADSR envelope multipliers, oscillator waveforms, and low-pass filter settings.</p>
           
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -478,7 +403,7 @@ onUnmounted(() => {
         </section>
 
         <section id="oneshots" class="mb-20">
-          <h2 class="text-xl font-semibold mb-4 tracking-tight">4. One-Shot Sounds</h2>
+          <h2 class="text-xl font-semibold mb-4 tracking-tight">6. One-Shot Sounds</h2>
           <p class="mb-6">Click any of the buttons below to preview the built-in one-shot sounds. The sounds will synthesize according to the "Global Feel" selected at the top of this page.</p>
           
           <!-- DX Sandbox Controls -->
@@ -530,7 +455,7 @@ onUnmounted(() => {
         </section>
 
         <section id="loops" class="mb-20">
-          <h2 class="text-xl font-semibold mb-4 tracking-tight">5. Ambient Loops</h2>
+          <h2 class="text-xl font-semibold mb-4 tracking-tight">7. Ambient Loops</h2>
           <p class="mb-6">Ambient loops are long-running procedural soundscapes. They automatically fade in and out. You can run multiple loops simultaneously.</p>
           
           <div class="flex flex-wrap gap-3">
@@ -546,10 +471,14 @@ onUnmounted(() => {
               <span class="uppercase">{{ loop }}</span>
             </button>
           </div>
+          
+          <h3 class="text-sm font-semibold text-black mt-8 mb-2">Custom loops</h3>
+          <p class="mb-4">You can register custom procedural loops that run indefinitely and can be faded in/out.</p>
+          <CodeSnippet :code="codeCustomLoop" />
         </section>
 
         <section id="frameworks" class="mb-20">
-          <h2 class="text-xl font-semibold mb-4 tracking-tight">6. Framework Integration</h2>
+          <h2 class="text-xl font-semibold mb-4 tracking-tight">8. Framework Integration</h2>
           <p class="mb-4">The easiest way to use the library is with declarative HTML attributes. Run <code class="bg-black/5 px-1.5 py-0.5 rounded text-black border border-black/10">bindUISounds()</code> when your app mounts.</p>
           
           <CodeSnippet :code="codeHtml" />
@@ -568,14 +497,40 @@ onUnmounted(() => {
         </section>
 
         <section id="customization" class="mb-20">
-          <h2 class="text-xl font-semibold mb-4 tracking-tight">7. Custom API</h2>
+          <h2 class="text-xl font-semibold mb-4 tracking-tight">9. Custom API</h2>
           <p class="mb-6">For advanced users, you can write your own Web Audio API nodes and register them as sounds or feels into the catalog.</p>
           
           <CodeSnippet :code="codeCustom" />
         </section>
 
+        <section id="isolated" class="mb-20">
+          <h2 class="text-xl font-semibold mb-4 tracking-tight">10. Isolated Engine (Optional)</h2>
+          <p class="mb-4">The default exported functions operate on a shared global singleton, which is perfect for most web apps. If you need a completely isolated audio context (e.g. for independent game audio, or if you have multiple isolated micro-frontends on one page), you can instantiate a separate engine.</p>
+          <CodeSnippet :code="codeIsolatedEngine" />
+        </section>
+
+        <section id="cheatsheet" class="mb-20">
+          <h2 class="text-xl font-semibold mb-4 tracking-tight">11. API Cheat Sheet</h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-black/80">
+              <thead class="text-xs uppercase bg-black/5 text-black">
+                <tr><th class="px-4 py-3 rounded-tl">API</th><th class="px-4 py-3 rounded-tr">Role</th></tr>
+              </thead>
+              <tbody class="divide-y divide-black/10">
+                <tr><td class="px-4 py-3 font-mono text-xs"><code>playUISound</code> / <code>configureUISounds</code></td><td class="px-4 py-3">Core interaction</td></tr>
+                <tr><td class="px-4 py-3 font-mono text-xs"><code>warmUpAudio</code> / <code>getAudioContext</code></td><td class="px-4 py-3">Audio unlock</td></tr>
+                <tr><td class="px-4 py-3 font-mono text-xs"><code>setUISoundsEnabled</code> / <code>setMasterVolume</code></td><td class="px-4 py-3">Mute & level</td></tr>
+                <tr><td class="px-4 py-3 font-mono text-xs"><code>registerFeel</code> / <code>registerSound</code></td><td class="px-4 py-3">Catalog</td></tr>
+                <tr><td class="px-4 py-3 font-mono text-xs"><code>startLoop</code> / <code>stopLoop</code> / <code>stopAllLoops</code></td><td class="px-4 py-3">Long-running beds</td></tr>
+                <tr><td class="px-4 py-3 font-mono text-xs"><code>bindUISounds</code></td><td class="px-4 py-3">DOM attributes</td></tr>
+                <tr><td class="px-4 py-3 font-mono text-xs"><code>createUISounds</code></td><td class="px-4 py-3">Isolated instance</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         <section id="error-handling" class="mb-20">
-          <h2 class="text-xl font-semibold mb-4 tracking-tight">8. Error Handling Philosophy</h2>
+          <h2 class="text-xl font-semibold mb-4 tracking-tight">12. Error Handling Philosophy</h2>
           <p class="mb-4 text-[15px] leading-relaxed text-black/80">This library is designed for UI augmentation and strictly prioritizes application stability. It follows a <strong>"graceful degradation"</strong> model.</p>
           <ul class="list-disc pl-5 mb-6 text-[15px] leading-relaxed text-black/80 space-y-2">
             <li><strong>Silent Failures:</strong> The library uses extensive <code>try/catch</code> blocks internally. If the browser blocks audio (e.g., due to autoplay policies), or if a sound fails to synthesize, the error is caught and swallowed. This guarantees that calling <code>playUISound()</code> will <strong>never</strong> throw an exception that could crash your React/Vue application.</li>
