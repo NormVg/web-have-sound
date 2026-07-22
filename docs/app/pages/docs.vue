@@ -207,24 +207,25 @@ onMounted(() => {
   <div class="min-h-screen bg-[var(--bg-root)] text-[var(--text-primary)] font-sans selection:bg-white selection:text-black">
     
     <!-- Minimal Top Nav -->
-    <header class="border-b border-white/10 sticky top-0 bg-[var(--bg-root)]/90 backdrop-blur-md z-50">
-      <div class="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-        <div class="flex items-center gap-4">
-          <NuxtLink to="/" class="text-white/40 hover:text-white transition-colors" title="Back to Sequencer">
+    <header class="border-b border-white/5 sticky top-0 bg-[var(--bg-root)]/80 backdrop-blur-xl z-50">
+      <div class="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <NuxtLink to="/" class="text-white/40 hover:text-white transition-colors flex items-center justify-center w-8 h-8 rounded-md hover:bg-white/5" title="Back to Sequencer" data-uisound="hover">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           </NuxtLink>
+          <div class="w-[1px] h-4 bg-white/10 mx-1"></div>
           <h1 class="text-sm font-semibold tracking-tight text-white flex items-center gap-2">
-            <div class="w-2 h-2 rounded-full bg-white"></div>
+            <div class="w-2 h-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]"></div>
             Web Have Sounds
           </h1>
         </div>
         
-        <div class="flex items-center gap-6 text-sm">
-          <a href="#installation" class="hidden sm:block text-white/50 hover:text-white transition-colors">Install</a>
-          <a href="#quickstart" class="hidden sm:block text-white/50 hover:text-white transition-colors">Usage</a>
-          <a href="#customization" class="hidden sm:block text-white/50 hover:text-white transition-colors">API</a>
-          <button @click="copyDocs" class="text-xs font-mono bg-white text-black px-3 py-1.5 rounded hover:bg-white/90 transition-colors">
-            {{ copyStatus === 'Copy Markdown for Agent' ? 'Copy MD' : copyStatus }}
+        <div class="flex items-center gap-6 text-sm font-medium">
+          <a href="#installation" class="hidden sm:block text-white/40 hover:text-white transition-colors" data-uisound="hover">Install</a>
+          <a href="#quickstart" class="hidden sm:block text-white/40 hover:text-white transition-colors" data-uisound="hover">Usage</a>
+          <a href="#customization" class="hidden sm:block text-white/40 hover:text-white transition-colors" data-uisound="hover">API</a>
+          <button @click="copyDocs" class="text-[10px] uppercase tracking-wider font-bold bg-white text-black px-4 py-2 rounded shadow-sm hover:bg-white/90 hover:scale-[0.98] active:scale-95 transition-all" data-uisound="hover">
+            {{ copyStatus === 'Copy Markdown for Agent' ? 'COPY MD' : copyStatus }}
           </button>
         </div>
       </div>
