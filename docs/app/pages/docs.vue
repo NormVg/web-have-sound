@@ -167,7 +167,7 @@ const activeLoop = ref<string | null>(null)
 const masterVolume = ref(0.8)
 
 const sounds = [
-  'click', 'pop', 'tick', 'drop', 'hover',
+  'click', 'pop', 'tick', 'drop', 'hover', 'thud',
   'success', 'error', 'warning', 'notify',
   'startup', 'connect', 'disconnect',
   'toggle', 'press', 'release', 'select', 'deselect',
@@ -197,6 +197,7 @@ const getSoundColor = (id: string) => {
     click: 'bg-zinc-400',
     tick: 'bg-zinc-400',
     hover: 'bg-zinc-400',
+    thud: 'bg-slate-800',
     keystroke: 'bg-zinc-400'
   }
   return colors[id] || 'bg-zinc-400'
@@ -274,6 +275,10 @@ const drawOscilloscope = () => {
       // Short transient (decays quickly left to right in the visualization)
       const env = Math.max(0, 1 - x / (width * 0.3)) 
       y = Math.sin(x * 0.1 * baseFreq + time * 12) * (2 + 25 * amp * env)
+    } else if (sName === 'thud') {
+      // Heavy low frequency, large amplitude, decaying
+      const env = Math.exp(-x * 0.01)
+      y = Math.sin(x * 0.02 * baseFreq + time * 4) * (2 + 40 * amp * env)
     } else if (sName === 'pop' || sName === 'drop') {
       // Bouncy / rounded
       y = Math.abs(Math.sin(x * 0.04 * baseFreq + time * 8)) * (4 + 30 * amp) - (2 + 15 * amp)

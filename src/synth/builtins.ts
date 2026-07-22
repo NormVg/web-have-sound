@@ -286,4 +286,26 @@ export function registerBuiltins(catalog: Catalog): void {
             oscType: "triangle",
         });
     });
+
+    r("thud", (s) => {
+        const { ctx, time, params, volume, connect } = s;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = "sine";
+        // Pitch drop for heavy impact
+        osc.frequency.setValueAtTime(150 * params.pitchMult, time);
+        osc.frequency.exponentialRampToValueAtTime(40, time + 0.1);
+
+        // Amplitude envelope: sharp attack, quick decay
+        gain.gain.setValueAtTime(0.001, time);
+        gain.gain.exponentialRampToValueAtTime(1.2 * volume * params.gainMult, time + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.35 * params.decayMult);
+
+        osc.connect(gain);
+        connect(gain);
+
+        osc.start(time);
+        osc.stop(time + 0.35 * params.decayMult + 0.05);
+    });
 }

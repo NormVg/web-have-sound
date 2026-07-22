@@ -21,7 +21,7 @@ const sounds = [
   { id: 'success', label: 'SUCC' },
   { id: 'error', label: 'ERR' },
   { id: 'drop', label: 'DROP' },
-  { id: 'keystroke', label: 'KEY' },
+  { id: 'thud', label: 'THUD' },
 ]
 
 const loops = [
@@ -156,6 +156,10 @@ const drawOscilloscope = () => {
       // Short transient (decays quickly left to right in the visualization)
       const env = Math.max(0, 1 - x / (width * 0.3)) 
       y = Math.sin(x * 0.1 * baseFreq + time * 12) * (2 + 25 * amp * env)
+    } else if (sName === 'thud') {
+      // Heavy low frequency, large amplitude, decaying
+      const env = Math.exp(-x * 0.01)
+      y = Math.sin(x * 0.02 * baseFreq + time * 4) * (2 + 40 * amp * env)
     } else if (sName === 'pop' || sName === 'drop') {
       // Bouncy / rounded
       y = Math.abs(Math.sin(x * 0.04 * baseFreq + time * 8)) * (4 + 30 * amp) - (2 + 15 * amp)
