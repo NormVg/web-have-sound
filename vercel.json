@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd docs && npm install && npm run generate",
+  "buildCommand": "cd docs && npm install && NITRO_PRESET=static npm run generate",
   "outputDirectory": "docs/.output/public",
   "installCommand": "npm install"
 }
