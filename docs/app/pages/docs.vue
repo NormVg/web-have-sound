@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { Copy, Check } from 'lucide-vue-next'
 import {
   playUISound,
   startLoop,
@@ -148,14 +149,14 @@ playUISound('laser', 'alien');
 \`\`\`
 `
 
-const copyStatus = ref('Copy Markdown for Agent')
+const copied = ref(false)
 
 const copyDocs = () => {
   navigator.clipboard.writeText(agentDocsMarkdown).then(() => {
-    copyStatus.value = 'Copied! ✅'
+    copied.value = true
     playUISound('success')
     setTimeout(() => {
-      copyStatus.value = 'Copy Markdown for Agent'
+      copied.value = false
     }, 2000)
   })
 }
@@ -220,8 +221,9 @@ onMounted(() => {
           <a href="#customization" class="hidden sm:block text-white/50 hover:text-white transition-colors" data-uisound="hover">API</a>
           <div class="w-[1px] h-3 bg-white/10 hidden sm:block mx-1"></div>
           <button @click="copyDocs" class="flex items-center gap-1.5 text-white/70 hover:text-white transition-colors" data-uisound="hover">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="opacity-70"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            {{ copyStatus === 'Copy Markdown for Agent' ? 'Copy MD' : copyStatus }}
+            <Copy v-if="!copied" class="w-3.5 h-3.5 opacity-70" />
+            <Check v-else class="w-3.5 h-3.5 text-green-400" />
+            {{ copied ? 'Copied' : 'Copy MD' }}
           </button>
         </div>
       </div>
