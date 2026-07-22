@@ -387,6 +387,14 @@ registerSound('my_laser', ({ ctx, time, params, volume, connect }) => {
 
 playUISound('my_laser');`
 
+const codeErrorHandling = `import { configureUISounds } from '@thenormvg/web-have-sounds';
+
+// Initialize with debug mode to route non-fatal 
+// audio exceptions to console.warn
+configureUISounds({ 
+  debug: true 
+});`
+
 onMounted(() => {
   configureUISounds({
     feel: selectedFeel.value,
@@ -571,8 +579,9 @@ onUnmounted(() => {
           <p class="mb-4 text-[15px] leading-relaxed text-black/80">This library is designed for UI augmentation and strictly prioritizes application stability. It follows a <strong>"graceful degradation"</strong> model.</p>
           <ul class="list-disc pl-5 mb-6 text-[15px] leading-relaxed text-black/80 space-y-2">
             <li><strong>Silent Failures:</strong> The library uses extensive <code>try/catch</code> blocks internally. If the browser blocks audio (e.g., due to autoplay policies), or if a sound fails to synthesize, the error is caught and swallowed. This guarantees that calling <code>playUISound()</code> will <strong>never</strong> throw an exception that could crash your React/Vue application.</li>
-            <li><strong>Opt-in Debugging:</strong> If you need to troubleshoot why sounds aren't playing (e.g., missing names, bad registrations, or autoplay blocks), initialize with debug mode: <code>configureUISounds({ debug: true })</code>. This routes internal failures to <code>console.warn</code> so you can see them during development without crashing the app.</li>
+            <li><strong>Opt-in Debugging:</strong> If you need to troubleshoot why sounds aren't playing (e.g., missing names, bad registrations, or autoplay blocks), initialize with debug mode. This routes internal failures to <code>console.warn</code> so you can see them during development without crashing the app.</li>
           </ul>
+          <CodeSnippet :code="codeErrorHandling" />
         </section>
 
       </div>
