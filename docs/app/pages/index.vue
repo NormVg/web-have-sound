@@ -399,7 +399,7 @@ const copyInstall = async () => {
 
 const copySkillInstall = async () => {
   try {
-    await navigator.clipboard.writeText('npx skills add https://github.com/normvg/web-have-sound --skill web-have-sounds')
+    await navigator.clipboard.writeText('npx skills add normvg/web-have-sound --skill web-have-sounds')
     playUISound('success')
     triggerVisualizer()
   } catch (e) {
@@ -491,7 +491,7 @@ const copyCode = async () => {
             
             <p class="pt-2 text-[11px] uppercase tracking-widest text-white/40 font-bold border-t border-white/5">Install Agent Skill</p>
             <div class="w-full bg-[#181818] border border-[#2a2a2a] hover:border-[#333] transition-colors p-3 rounded flex justify-between items-center text-[var(--color-snow)] font-mono text-xs group">
-              <code class="text-left select-text whitespace-nowrap overflow-x-auto no-scrollbar">npx skills add https://github.com/normvg/web-have-sound --skill web-have-sounds</code>
+              <code class="text-left select-text whitespace-nowrap overflow-x-auto no-scrollbar">npx skills add normvg/web-have-sound --skill web-have-sounds</code>
               <button 
                 @pointerdown="copySkillInstall" 
                 class="text-[var(--color-dusty-grey)] hover:text-white transition-all cursor-pointer active:scale-[0.85] active:brightness-90 select-none p-1 -m-1 ml-2 shrink-0"

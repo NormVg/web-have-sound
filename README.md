@@ -33,7 +33,7 @@ npm install @thenormvg/web-have-sounds
 If you are using Claude Code or an agentic coding assistant, you can install the `web-have-sounds` skill directly into your project to teach your AI how to perfectly implement this library according to UI audio best practices.
 
 ```bash
-npx skills add https://github.com/normvg/web-have-sound --skill web-have-sounds
+npx skills add normvg/web-have-sound --skill web-have-sounds
 ```
 
 ---
