@@ -19,44 +19,12 @@ const copyToClipboard = () => {
   })
 }
 
-// Ultra-lightweight custom syntax highlighter for a light theme
+// Simply escape HTML to render raw text with no syntax highlighting
 const highlightedCode = computed(() => {
-  let html = props.code
-    // Escape HTML first
+  return props.code
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-
-  const tokens: string[] = []
-  const pushToken = (content: string, className: string) => {
-    const id = `___TOKEN${tokens.length}___`
-    tokens.push(`<span class="${className}">${content}</span>`)
-    return id
-  }
-
-  // Strings (single and double quotes)
-  html = html.replace(/('[^']*'|"[^"]*")/g, (m) => pushToken(m, 'text-[#032f62]'))
-  
-  // Single-line Comments
-  html = html.replace(/(\/\/.*)/g, (m) => pushToken(m, 'text-black/40 italic'))
-
-  // HTML Tags (already escaped, so match &lt;...&gt;)
-  html = html.replace(/(&lt;\/?[\w-]+.*?&gt;)/g, (m) => pushToken(m, 'text-[#22863a]'))
-  
-  // Keywords
-  const keywords = ['import', 'from', 'export', 'default', 'const', 'let', 'var', 'function', 'return', 'setup']
-  const keywordRegex = new RegExp(`\\b(${keywords.join('|')})\\b`, 'g')
-  html = html.replace(keywordRegex, (m) => pushToken(m, 'text-[#d73a49]'))
-  
-  // Function calls
-  html = html.replace(/(\w+)(?=\()/g, (m) => pushToken(m, 'text-[#6f42c1]'))
-
-  // Restore tokens
-  tokens.forEach((token, i) => {
-    html = html.replace(`___TOKEN${i}___`, token)
-  })
-
-  return html
 })
 </script>
 
