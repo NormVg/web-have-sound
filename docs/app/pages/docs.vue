@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { Copy, Check } from '@lucide/vue'
 import {
   playUISound,
@@ -219,6 +219,69 @@ const toggleDocsLoop = (loopId: string) => {
 
 const playPreview = (id: string) => {
   playUISound(id as any, selectedFeel.value)
+  triggerOscilloscope(id)
+}
+
+// --- VISUALIZER STATE ---
+const oscCanvas = ref<HTMLCanvasElement | null>(null)
+const oscData = ref({ activeSound: 'chime', freq: 1047, time: 0.36, amplitude: 0 })
+let oscFrame: any = null
+
+const drawOscilloscope = () => {
+  if (!oscCanvas.value) return
+  const canvas = oscCanvas.value
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+  
+  const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1
+  const rect = canvas.getBoundingClientRect()
+  if (canvas.width !== rect.width * dpr || canvas.height !== rect.height * dpr) {
+    canvas.width = rect.width * dpr
+    canvas.height = rect.height * dpr
+    ctx.scale(dpr, dpr)
+  } else {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+  }
+
+  const width = rect.width
+  const height = rect.height
+
+  ctx.clearRect(0, 0, width, height)
+  
+  // Draw faint grid
+  ctx.strokeStyle = '#00000005'
+  ctx.lineWidth = 1
+  for(let x = 0; x < width; x += 15) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke(); }
+  for(let y = 0; y < height; y += 15) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke(); }
+
+  // Draw wave
+  const time = Date.now() / 1000
+  const amp = oscData.value.amplitude
+  const baseFreq = oscData.value.freq / 100
+  
+  ctx.beginPath()
+  ctx.moveTo(0, height / 2)
+  for(let x = 0; x < width; x += 2) {
+    const y = Math.sin(x * 0.05 * baseFreq + time * 8) * (2 + 25 * amp)
+    ctx.lineTo(x, height / 2 + y)
+  }
+  ctx.strokeStyle = '#ff6b35'
+  ctx.lineWidth = 2
+  ctx.shadowColor = 'rgba(255, 107, 53, 0.4)'
+  ctx.shadowBlur = 6
+  ctx.stroke()
+  
+  oscData.value.amplitude = Math.max(0, oscData.value.amplitude - 0.04)
+  oscData.value.time = Math.min(1.0, oscData.value.time + 0.01)
+  
+  oscFrame = requestAnimationFrame(drawOscilloscope)
+}
+
+const triggerOscilloscope = (soundName: string) => {
+  oscData.value.activeSound = soundName
+  oscData.value.freq = 400 + Math.floor(Math.random() * 800)
+  oscData.value.time = 0.0
+  oscData.value.amplitude = 1.0
 }
 
 const codeInstall = `npm install @thenormvg/web-have-sounds`
@@ -294,6 +357,11 @@ onMounted(() => {
     volume: masterVolume.value
   })
   bindUISounds()
+  oscFrame = requestAnimationFrame(drawOscilloscope)
+})
+
+onUnmounted(() => {
+  if (oscFrame) cancelAnimationFrame(oscFrame)
 })
 </script>
 
@@ -389,6 +457,18 @@ onMounted(() => {
                 <input type="range" min="0" max="1" step="0.05" v-model.number="masterVolume" @input="setMasterVolume(masterVolume)" class="w-20 accent-[var(--color-liquid-lava)]">
               </div>
             </div>
+          </div>
+
+          <!-- Oscilloscope Widget -->
+          <div class="bg-white rounded-[4px] p-5 relative overflow-hidden border border-black/10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col mb-6">
+            <div class="flex justify-between items-baseline mb-4 relative z-10">
+              <div class="flex items-baseline gap-3">
+                <span class="text-[13px] font-bold text-black/90">Sound palette</span> 
+                <span class="text-[10px] text-black/40 font-mono">oscilloscope output</span>
+              </div>
+              <div class="text-[10px] font-mono text-black/40 bg-black/5 px-2 py-0.5 rounded-sm">{{ oscData.activeSound }} &nbsp;{{ oscData.freq }} Hz &middot; {{ oscData.time.toFixed(2) }} s</div>
+            </div>
+            <canvas ref="oscCanvas" class="w-full h-[40px] relative z-0"></canvas>
           </div>
 
           <div class="flex flex-wrap gap-2">
