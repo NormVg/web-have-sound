@@ -378,7 +378,7 @@ onUnmounted(() => {
 
       <!-- Minimal Top Nav -->
       <header class="border-b border-black/5 sticky top-0 bg-[var(--color-snow)]/90 backdrop-blur-md z-50">
-        <div class="max-w-3xl mx-auto px-8 h-16 flex items-center justify-between">
+        <div class="max-w-3xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
           <NuxtLink to="/" class="flex items-center gap-3 group" title="Back to Sequencer" data-uisound="hover">
             <div class="w-2 h-2 rounded-full bg-[var(--color-liquid-lava)] group-hover:shadow-[0_0_12px_var(--color-liquid-lava)] transition-shadow duration-300"></div>
             <h1 class="text-[13px] font-medium tracking-wide text-black group-hover:text-black/70 transition-colors font-sans uppercase">
@@ -401,7 +401,7 @@ onUnmounted(() => {
       </header>
 
     <!-- Main Content -->
-      <main class="max-w-3xl w-full mx-auto px-8 py-16 md:py-24 font-sans">
+      <main class="max-w-3xl w-full mx-auto px-5 sm:px-8 py-12 sm:py-16 md:py-24 font-sans">
         
         <div class="prose prose-p:text-black/70 prose-p:text-[14px] prose-p:leading-relaxed prose-headings:text-black prose-a:text-[var(--color-liquid-lava)] hover:prose-a:text-[#ff8f40] prose-code:text-black max-w-none">
           
@@ -421,7 +421,7 @@ onUnmounted(() => {
           <h2 class="text-xl font-semibold mb-4 tracking-tight">3. Feels Catalog</h2>
           <p class="mb-6">"Feels" are synthesizer presets that completely change the aesthetic of all sounds. They dictate the ADSR envelope multipliers, oscillator waveforms, and low-pass filter settings.</p>
           
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             <div v-for="(params, name) in FEEL_PRESETS" :key="name" class="bg-white p-3 rounded border border-black/10 hover:border-[var(--color-liquid-lava)] shadow-sm transition-colors">
               <div class="font-semibold text-sm mb-1 capitalize">{{ name }}</div>
               <div class="text-[10px] font-mono text-black/50">
@@ -438,13 +438,13 @@ onUnmounted(() => {
           <p class="mb-6">Click any of the buttons below to preview the built-in one-shot sounds. The sounds will synthesize according to the "Global Feel" selected at the top of this page.</p>
           
           <!-- DX Sandbox Controls -->
-          <div class="bg-black/5 border border-black/10 rounded-lg p-6 mb-8 flex flex-col sm:flex-row gap-6 sm:items-center justify-between">
+          <div class="bg-black/5 border border-black/10 rounded-lg p-4 sm:p-6 mb-8 flex flex-col sm:flex-row gap-4 sm:gap-6 sm:items-center justify-between">
             <div>
               <h3 class="text-sm font-semibold text-black mb-1">Interactive Sandbox</h3>
               <p class="text-xs text-black/60">Change the global feel to preview how the library renders audio below.</p>
             </div>
             
-            <div class="flex items-center gap-6">
+            <div class="flex flex-wrap items-center gap-4 sm:gap-6">
               <div class="flex items-center gap-3">
                 <label class="text-xs text-black/50 font-mono">Feel</label>
                 <select v-model="selectedFeel" @change="playUISound('select')" class="bg-white border border-black/20 text-black text-xs px-2 py-1 rounded outline-none focus:border-black font-mono min-w-24">
@@ -460,8 +460,8 @@ onUnmounted(() => {
           </div>
 
           <!-- Oscilloscope Widget -->
-          <div class="bg-white rounded-[4px] p-5 relative overflow-hidden border border-black/10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col mb-6">
-            <div class="flex justify-between items-baseline mb-4 relative z-10">
+          <div class="bg-white rounded-[4px] p-4 sm:p-5 relative overflow-hidden border border-black/10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col mb-6">
+            <div class="flex flex-col sm:flex-row sm:justify-between items-start sm:items-baseline gap-2 sm:gap-0 mb-4 relative z-10">
               <div class="flex items-baseline gap-3">
                 <span class="text-[13px] font-bold text-black/90">Sound palette</span> 
                 <span class="text-[10px] text-black/40 font-mono">oscilloscope output</span>

@@ -532,7 +532,7 @@ const copyCode = async () => {
 
       <!-- BOTTOM HALF: STARK WHITE DOCS -->
       <div class="flex-1 w-full bg-[var(--color-snow)] text-[var(--color-dark-void)] border-t border-black overflow-hidden relative">
-        <div class="p-6 pt-8 pb-20 relative">
+        <div class="px-5 sm:px-6 pt-8 pb-20 relative">
           
           <!-- SPEAKER MESH GRILL -->
           <div class="w-full max-w-sm mx-auto h-4 rounded-full mb-8" 
@@ -555,7 +555,7 @@ const copyCode = async () => {
             </div>
             
             <!-- TOY SEQUENCER MODULE (Bottom Half) -->
-            <div class="bg-[var(--color-dark-void)] rounded-t-[4px] rounded-b-xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.25)] border border-black/10">
+            <div class="bg-[var(--color-dark-void)] rounded-t-[4px] rounded-b-xl p-4 sm:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.25)] border border-black/10">
             
             <!-- Transport Controls -->
             <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
@@ -630,7 +630,7 @@ const copyCode = async () => {
             <h2 class="text-[11px] font-bold uppercase tracking-widest m-0">Architecture</h2>
           </div>
 
-          <div class="grid grid-cols-2 gap-px bg-black/20 border border-black/20 mb-12">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-px bg-black/20 border border-black/20 mb-12">
             <!-- Cell 1: Procedural -->
             <div 
               class="bg-[var(--color-snow)] hover:bg-[#f5f5f5] transition-colors p-4 flex flex-col justify-between cursor-crosshair group"
