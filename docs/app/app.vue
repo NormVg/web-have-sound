@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import {
   configureUISounds,
   playUISound,
@@ -43,11 +43,138 @@ const activeBands = ref<number[]>(Array(16).fill(0))
 let decayInterval: any = null
 let unbindDomSounds: any = null
 
+// --- TOY SEQUENCER STATE ---
+const defaultGrid = [
+  [true, false, false, true, false, false, true, false, false, true, false, true, true, true, false, false],
+  [false, true, true, false, true, false, false, true, false, true, false, false, true, false, true, false],
+  [true, false, false, true, false, true, false, true, false, true, false, true, false, true, false, false],
+  [false, true, false, true, true, false, true, false, true, true, true, true, true, false, true, false]
+]
+const defaultTracks = ['drop', 'pop', 'tick', 'click']
+const defaultFeels = ['industrial', 'arcade', 'minimal', 'aero']
+
+const sequencerGrid = ref(Array.from({ length: 4 }, () => Array(16).fill(false)))
+const sequencerTracks = ref(['drop', 'pop', 'tick', 'click'])
+const sequencerFeels = ref(['industrial', 'arcade', 'minimal', 'aero'])
+const currentStep = ref(0)
+const isPlaying = ref(false)
+const bpm = ref(120)
+let sequencerInterval: any = null
+
+const saveSequencerState = () => {
+  if (typeof window === 'undefined') return
+  localStorage.setItem('te-sequencer-state', JSON.stringify({
+    grid: sequencerGrid.value,
+    tracks: sequencerTracks.value,
+    feels: sequencerFeels.value,
+    bpm: bpm.value
+  }))
+}
+
+const loadSequencerState = () => {
+  try {
+    const saved = localStorage.getItem('te-sequencer-state')
+    if (saved) {
+      const data = JSON.parse(saved)
+      if (data.grid) sequencerGrid.value = data.grid
+      if (data.tracks) sequencerTracks.value = data.tracks
+      if (data.feels) sequencerFeels.value = data.feels
+      if (data.bpm) bpm.value = data.bpm
+      return
+    }
+  } catch (e) {}
+  
+  // Fallback to default beat
+  resetSequencer(false)
+}
+
+const resetSequencer = (playSound = true) => {
+  sequencerGrid.value = JSON.parse(JSON.stringify(defaultGrid))
+  sequencerTracks.value = [...defaultTracks]
+  sequencerFeels.value = [...defaultFeels]
+  bpm.value = 120
+  if (playSound) playUISound('pop')
+}
+
+const clearSequencer = () => {
+  sequencerGrid.value = Array.from({ length: 4 }, () => Array(16).fill(false))
+  playUISound('tick')
+}
+
+watch(sequencerGrid, saveSequencerState, { deep: true })
+watch([sequencerTracks, sequencerFeels, bpm], saveSequencerState, { deep: true })
+
+const cycleTrackSound = (idx: number) => {
+  const allSounds = ['click', 'pop', 'hover', 'tick', 'success', 'error', 'drop', 'keystroke']
+  const next = allSounds[(allSounds.indexOf(sequencerTracks.value[idx]) + 1) % allSounds.length]
+  sequencerTracks.value[idx] = next
+  playUISound(next as any, sequencerFeels.value[idx] as any)
+  triggerVisualizer()
+}
+
+const cycleTrackFeel = (idx: number) => {
+  const next = availableFeels[(availableFeels.indexOf(sequencerFeels.value[idx]) + 1) % availableFeels.length]
+  sequencerFeels.value[idx] = next
+  playUISound(sequencerTracks.value[idx] as any, next as any)
+  triggerVisualizer()
+}
+
+const toggleStep = (trackIdx: number, stepIdx: number) => {
+  sequencerGrid.value[trackIdx][stepIdx] = !sequencerGrid.value[trackIdx][stepIdx]
+  if (sequencerGrid.value[trackIdx][stepIdx]) {
+    playUISound(sequencerTracks.value[trackIdx] as any, sequencerFeels.value[trackIdx] as any)
+    triggerVisualizer()
+  }
+}
+
+const runSequencer = () => {
+  if (sequencerInterval) clearInterval(sequencerInterval)
+  const msPerBeat = 60000 / bpm.value
+  const msPerStep = msPerBeat / 4 // 16th notes
+  
+  sequencerInterval = setInterval(() => {
+    // Play sounds for current step
+    let played = false
+    for (let track = 0; track < 4; track++) {
+      if (sequencerGrid.value[track][currentStep.value]) {
+        playUISound(sequencerTracks.value[track] as any, sequencerFeels.value[track] as any)
+        played = true
+      }
+    }
+    if (played) triggerVisualizer()
+    
+    // Advance step
+    currentStep.value = (currentStep.value + 1) % 16
+  }, msPerStep)
+}
+
+const togglePlay = () => {
+  isPlaying.value = !isPlaying.value
+  if (isPlaying.value) {
+    playUISound('pop')
+    runSequencer()
+  } else {
+    if (sequencerInterval) clearInterval(sequencerInterval)
+    currentStep.value = 0
+    playUISound('tick')
+  }
+}
+
+watch(bpm, () => {
+  if (isPlaying.value) {
+    runSequencer()
+  }
+})
+// ---------------------------
+
 onMounted(() => {
   configureUISounds({
     feel: currentFeel.value as any,
     volume: volume.value,
+    ambient: 'quiet'
   })
+  
+  loadSequencerState()
   
   // Bind declarative data-uisound attributes
   unbindDomSounds = bindUISounds()
@@ -76,6 +203,7 @@ onUnmounted(() => {
   })
   if (decayInterval) clearInterval(decayInterval)
   if (unbindDomSounds) unbindDomSounds()
+  if (sequencerInterval) clearInterval(sequencerInterval)
 })
 
 const triggerVisualizer = () => {
@@ -314,6 +442,69 @@ const copyCode = async () => {
           <!-- Hardware Speaker Grill -->
           <div class="w-full h-6 rounded-full bg-black/5 border border-black/10 shadow-[inset_0_2px_5px_rgba(0,0,0,0.1)] mb-10 overflow-hidden flex items-center justify-center">
             <div class="w-full h-full opacity-40" style="background-image: radial-gradient(circle, #000 1px, transparent 1px); background-size: 3px 3px; background-position: center;"></div>
+          </div>
+          
+          <!-- TOY SEQUENCER (16-Step) -->
+          <div class="mb-14 bg-[var(--color-dark-void)] text-[var(--color-te-silver)] p-6 rounded-[4px] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5),0_4px_12px_rgba(0,0,0,0.1)] border border-black relative">
+            
+            <!-- Controls -->
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
+              <div class="flex items-center gap-4">
+                <button 
+                  @click="togglePlay"
+                  class="w-10 h-10 rounded-full flex items-center justify-center transition-transform active:scale-90 shadow-[inset_0_1px_1px_rgba(255,255,255,0.3),0_2px_4px_rgba(0,0,0,0.5)]"
+                  :class="isPlaying ? 'bg-[var(--color-liquid-lava)] text-black border border-[#c34300]' : 'bg-white text-black hover:bg-[#e0e0e0] border border-black/20'"
+                >
+                  <svg v-if="!isPlaying" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="ml-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                  <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14"></rect></svg>
+                </button>
+                <div class="font-mono text-[10px] tracking-widest uppercase">
+                  <div>SEQ_16</div>
+                  <div :class="isPlaying ? 'text-[var(--color-liquid-lava)]' : 'text-white/50'">{{ isPlaying ? 'RUN' : 'RDY' }}</div>
+                </div>
+              </div>
+              
+              <!-- BPM Slider -->
+              <div class="flex items-center gap-3">
+                <div class="text-[10px] font-mono uppercase tracking-widest text-white/50">BPM <span class="text-white">{{ bpm }}</span></div>
+                <input type="range" min="60" max="200" step="1" v-model.number="bpm" class="w-24 accent-[var(--color-liquid-lava)] cursor-crosshair">
+              </div>
+            </div>
+
+            <!-- 16-Step Grid with Track Controls -->
+            <div class="flex gap-3">
+              
+              <!-- Track Controls Column -->
+              <div class="flex flex-col gap-2 w-[48px] flex-shrink-0">
+                <div v-for="(track, tIndex) in 4" :key="'control-'+tIndex" class="h-10 flex flex-col justify-center gap-0.5">
+                  <button @click="cycleTrackSound(tIndex)" class="text-[9px] font-bold text-white text-left uppercase truncate hover:text-[var(--color-liquid-lava)] transition-colors active:scale-95 origin-left tracking-widest cursor-crosshair">{{ sequencerTracks[tIndex] }}</button>
+                  <button @click="cycleTrackFeel(tIndex)" class="text-[8px] font-mono text-white/40 text-left uppercase truncate hover:text-[var(--color-liquid-lava)] transition-colors active:scale-95 origin-left cursor-crosshair">{{ sequencerFeels[tIndex] }}</button>
+                </div>
+              </div>
+
+              <!-- Grid -->
+              <div class="flex flex-col gap-2 flex-1 w-full overflow-hidden">
+                <div v-for="(track, tIndex) in 4" :key="'track-'+tIndex" class="flex gap-[2px] h-10 w-full">
+                  <div 
+                    v-for="step in 16" 
+                    :key="'step-'+step"
+                    @pointerdown="toggleStep(tIndex, step - 1)"
+                    class="flex-1 rounded-[2px] cursor-crosshair transition-all duration-75 relative"
+                    :class="[
+                      sequencerGrid[tIndex][step - 1] ? 'bg-[var(--color-liquid-lava)] shadow-[0_0_8px_rgba(255,107,53,0.5)] border border-[#ff8855]' : 'bg-[#1a1a1a] hover:bg-[#2a2a2a] shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] border border-black/50',
+                      currentStep === step - 1 && isPlaying ? 'after:absolute after:inset-0 after:bg-white/30 after:rounded-[2px] after:shadow-[0_0_10px_rgba(255,255,255,0.5)]' : ''
+                    ]"
+                  ></div>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+          
+          <!-- Sequencer Footer Controls (Outside) -->
+          <div class="flex justify-between items-center mb-14 px-1 -mt-10 relative z-10">
+            <button @click="resetSequencer(true)" class="text-[9px] uppercase tracking-widest font-bold text-black/40 hover:text-[var(--color-liquid-lava)] transition-colors cursor-crosshair">Default Beat</button>
+            <button @click="clearSequencer" class="text-[9px] uppercase tracking-widest font-bold text-black/40 hover:text-black transition-colors cursor-crosshair">Clear Grid</button>
           </div>
           
           <div class="flex items-center gap-3 mb-4 border-b border-black/20 pb-3">
