@@ -85,7 +85,7 @@ onMounted(() => {
   // Automatically attaches event listeners to all elements with data-uisound
   bindUISounds();
 });
-</script>
+<\/script>
 <template>
   <button data-uisound="click" data-uisound-hover="hover">Click me</button>
 </template>
