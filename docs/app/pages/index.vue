@@ -11,6 +11,7 @@ import {
 } from '@thenormvg/web-have-sounds'
 
 const activeUsageTab = ref('Vanilla')
+const installTab = ref('npm')
 
 // Define the available sounds
 const sounds = [
@@ -458,7 +459,7 @@ const copyCode = async () => {
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
                   <span class="text-[10px] uppercase font-bold tracking-widest hidden sm:inline-block">Docs</span>
                 </NuxtLink>
-                <a href="https://github.com/thenormvg/web-have-sound" target="_blank" class="hover:text-[var(--color-snow)] transition-colors active:scale-95" @pointerdown="playUISound('click')" title="GitHub">
+                <a href="https://github.com/NormVg/web-have-sound" target="_blank" class="hover:text-[var(--color-snow)] transition-colors active:scale-95" @pointerdown="playUISound('click')" title="GitHub">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
                 </a>
                 <a href="https://www.npmjs.com/package/@thenormvg/web-have-sounds" target="_blank" class="hover:text-[var(--color-snow)] transition-colors active:scale-95" @pointerdown="playUISound('click')" title="NPM">
@@ -478,27 +479,31 @@ const copyCode = async () => {
             <p>
               A zero-dependency, procedural audio engine for the web. Synthesize tactile UI sounds and ambient loops in real-time using the Web Audio API.
             </p>
-            <div class="w-full bg-[#181818] border border-[#2a2a2a] hover:border-[#333] transition-colors p-3 rounded flex justify-between items-center text-[var(--color-snow)] font-mono text-xs group">
-              <code class="text-left select-text">npm i @thenormvg/web-have-sounds</code>
-              <button 
-                @pointerdown="copyInstall" 
-                class="text-[var(--color-dusty-grey)] hover:text-white transition-all cursor-pointer active:scale-[0.85] active:brightness-90 select-none p-1 -m-1"
-                title="Copy to clipboard"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              </button>
-            </div>
-            
-            <p class="pt-2 text-[11px] uppercase tracking-widest text-white/40 font-bold border-t border-white/5">Install Agent Skill</p>
-            <div class="w-full bg-[#181818] border border-[#2a2a2a] hover:border-[#333] transition-colors p-3 rounded flex justify-between items-center text-[var(--color-snow)] font-mono text-xs group">
-              <code class="text-left select-text whitespace-nowrap overflow-x-auto no-scrollbar">npx skills add normvg/web-have-sound --skill web-have-sounds</code>
-              <button 
-                @pointerdown="copySkillInstall" 
-                class="text-[var(--color-dusty-grey)] hover:text-white transition-all cursor-pointer active:scale-[0.85] active:brightness-90 select-none p-1 -m-1 ml-2 shrink-0"
-                title="Copy to clipboard"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              </button>
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <a href="https://github.com/NormVg/web-have-sound" target="_blank" class="inline-flex bg-[#1a1a1a] text-white/70 hover:text-white hover:bg-[#2a2a2a] border border-[#333] hover:border-[var(--color-liquid-lava)] py-1 px-2.5 rounded text-[9px] font-bold uppercase tracking-widest transition-all items-center gap-1.5 active:scale-95 shadow-[0_0_10px_rgba(255,255,255,0.05)] hover:shadow-[0_0_15px_rgba(255,107,53,0.2)]" data-uisound="pop" @pointerdown="playUISound('pop')">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                  Star
+                </a>
+                
+                <div class="flex bg-[#1a1a1a] border border-[#333] rounded p-0.5">
+                  <button @click="installTab = 'npm'" :class="{'bg-[#333] text-white shadow-sm': installTab === 'npm', 'text-white/40 hover:text-white': installTab !== 'npm'}" class="px-2 py-0.5 rounded-sm text-[9px] font-bold uppercase tracking-widest transition-all cursor-crosshair" data-uisound="tick">Library</button>
+                  <button @click="installTab = 'agent'" :class="{'bg-[#333] text-white shadow-sm': installTab === 'agent', 'text-white/40 hover:text-white': installTab !== 'agent'}" class="px-2 py-0.5 rounded-sm text-[9px] font-bold uppercase tracking-widest transition-all cursor-crosshair" data-uisound="tick">Agent</button>
+                </div>
+              </div>
+              
+              <div class="w-full bg-[#181818] border border-[#2a2a2a] hover:border-[#333] transition-colors p-3 rounded flex justify-between items-center text-[var(--color-snow)] font-mono text-xs group">
+                <code v-if="installTab === 'npm'" class="text-left select-text whitespace-nowrap overflow-x-auto no-scrollbar">npm i @thenormvg/web-have-sounds</code>
+                <code v-else class="text-left select-text whitespace-nowrap overflow-x-auto no-scrollbar">npx skills add normvg/web-have-sound --skill web-have-sounds</code>
+                
+                <button 
+                  @pointerdown="installTab === 'npm' ? copyInstall() : copySkillInstall()" 
+                  class="text-[var(--color-dusty-grey)] hover:text-white transition-all cursor-pointer active:scale-[0.85] active:brightness-90 select-none p-1 -m-1 ml-2 shrink-0"
+                  title="Copy to clipboard"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -843,7 +848,7 @@ btn.addEventListener(<span class="text-[var(--color-liquid-lava)]">'click'</span
           <div class="mt-12 pt-6 border-t border-black/10">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
               <div class="text-[10px] uppercase tracking-widest text-black/50 space-y-4">
-                <div>Web Audio API<br>Engine v1.6.4</div>
+                <div>Made with love by TheAlphaOnes<br>Web Audio API Engine v1.6.4</div>
                 <div class="flex gap-4 font-bold">
                   <a href="https://x.com/TheNormVg" target="_blank" class="hover:text-[var(--color-liquid-lava)] transition-colors" data-uisound="hover">X / Twitter</a>
                   <a href="https://github.com/NormVg" target="_blank" class="hover:text-[var(--color-liquid-lava)] transition-colors" data-uisound="hover">GitHub</a>
