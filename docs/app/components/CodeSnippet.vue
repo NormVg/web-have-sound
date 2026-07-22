@@ -25,21 +25,35 @@ const highlightedCode = computed(() => {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
 
-  // Comments
-  code = code.replace(/(\/\/.*)/g, '<span class="text-black/40 italic">$1</span>')
+  const tokens = []
+  let tokenId = 0
   
-  // Strings
-  code = code.replace(/(['"`])([^'"`\\]*(\\.[^'"`\\]*)*)\1/g, '<span class="text-[#d95d39]">$1$2$1</span>') // liquid lava color
+  const saveToken = (html) => {
+    const placeholder = `__TOKEN_${tokenId++}__`
+    tokens.push({ placeholder, html })
+    return placeholder
+  }
 
-  // Keywords (only if not inside HTML tags)
+  // 1. Comments
+  code = code.replace(/(\/\/.*)/g, match => saveToken(`<span class="text-black/40 italic">${match}</span>`))
+  
+  // 2. Strings
+  code = code.replace(/(['"`])([^'"`\\]*(\\.[^'"`\\]*)*)\1/g, match => saveToken(`<span class="text-[#d95d39]">${match}</span>`))
+
+  // 3. Keywords
   const keywords = ['import', 'from', 'const', 'let', 'function', 'return', 'export', 'default', 'await', 'async']
-  const kwRegex = new RegExp(`\\b(${keywords.join('|')})\\b(?![^<]*>)`, 'g')
-  code = code.replace(kwRegex, '<span class="text-blue-600 font-medium">$1</span>')
+  const kwRegex = new RegExp(`\\b(${keywords.join('|')})\\b`, 'g')
+  code = code.replace(kwRegex, match => saveToken(`<span class="text-blue-600 font-medium">${match}</span>`))
 
-  // Function calls
+  // 4. Function calls
   code = code.replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)(?=\s*\()/g, (match, p1) => {
-    if (keywords.includes(p1)) return match
-    return `<span class="text-purple-600">${p1}</span>`
+    if (keywords.includes(p1) || p1.startsWith('__TOKEN_')) return match
+    return saveToken(`<span class="text-purple-600">${p1}</span>`)
+  })
+
+  // Restore tokens
+  tokens.forEach(token => {
+    code = code.replace(token.placeholder, token.html)
   })
 
   return code
